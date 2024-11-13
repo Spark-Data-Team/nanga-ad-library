@@ -53,20 +53,15 @@ class ApiSession(object):
         self._verbose = verbose or False
         self._log_update(creation=True)
 
+    def __del__(self):
+        print("API session object killed")
+        self._requests_session.close()
+        self.__dict__.clear()
+
     def _log_update(self, creation=False):
         if self._verbose:
             print("New API session initiated" if creation else "API session updated")
             self.display_session_attributes()
-
-    def close(self):
-        """
-        Close _requests_session and clear all object attributes
-        """
-        self._requests_session.close()
-        verbose, self._verbose = self._verbose, False
-        self.update_params(None), self.update_retries(None, None), self.update_timeout(None)
-        self._verbose = verbose
-        self._log_update()
 
     def get_headers(self):
         return self._requests_session.headers

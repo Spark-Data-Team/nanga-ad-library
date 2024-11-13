@@ -3,6 +3,4 @@
 
 from nanga_ad_library.api import NangaAdLibraryApi
 
-__version__ = 'v1.0'
-
-__all__ = ['NangaAdLibraryApi']
+__version__ = "1.0.0"

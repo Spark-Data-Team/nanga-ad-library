@@ -48,6 +48,10 @@ class MetaAdLibrary:
         self._final_url = f"{self._base_url}/{self._version}/{self._endpoint}"
         self._payload = payload
 
+    def __del__(self):
+        print("Meta Ad Library object killed")
+        self.__dict__.clear()
+
     @classmethod
     def check_political_ads_targeting(cls, payload: dict):
         """

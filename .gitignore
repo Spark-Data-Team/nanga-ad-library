@@ -1,0 +1,60 @@
+# Adapted from a standard .gitignore file provided by ChatGPT (OpenAI®)
+# Byte-compiled and interpreter-specific files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Environment and dependency folders
+env/
+venv/
+.venv/
+ENV/
+.ENV/
+env.bak/
+venv.bak/
+
+# Distribution and build folders
+build/
+dist/
+*.egg-info/
+.eggs/
+
+# Setuptools / Wheel / pip generated files
+*.egg
+*.wheel
+
+# Installer logs
+pip-log.txt
+pip-delete-this-directory.txt
+
+# macOS system files
+.DS_Store
+
+# Linux system files
+*~
+
+# Windows system files
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# Temporary files
+*.bak
+*.swp
+*.tmp
+
+# Log files
+*.log
+
+# IDE-specific folders
+.idea/
+.vscode/
+*.sublime-project
+*.sublime-workspace
+
+# Jupyter Notebook checkpoints
+.ipynb_checkpoints
+
+# Environment variable files
+.env
+.env.*
