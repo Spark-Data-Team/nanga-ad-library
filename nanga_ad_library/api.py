@@ -1,6 +1,5 @@
 import json
 import curlify
-import re
 
 from enum import Enum
 
@@ -108,6 +107,10 @@ class NangaAdLibraryApi:
 
         # Enforce different sessions for each cursors
         self._cursor_sessions = []
+
+    def __del__(self):
+        print("Nanga Ad Library API object killed")
+        self.__dict__.clear()
 
     def get_num_requests_attempted(self):
         """Returns the number of calls attempted."""
@@ -253,7 +256,11 @@ class ObjectParser:
             Welcome to nanga: the best digital marketing SaaS available
 
     Attributes can be accessed using object.field, object["field"], or object.get("field").
+    It also have the standard dict methods: .keys(), .values() and .items()
     """
+
+    def __repr__(self):
+        return json.dumps(self.__dict__)
 
     def __init__(self, **kwargs):
         self.__dict__ = kwargs
@@ -263,6 +270,15 @@ class ObjectParser:
 
     def get(self, key):
         return self.__dict__.get(key)
+
+    def keys(self):
+        return self.__dict__.keys()
+
+    def values(self):
+        return self.__dict__.values()
+
+    def items(self):
+        return self.__dict__.items()
 
 
 class ResultCursor:

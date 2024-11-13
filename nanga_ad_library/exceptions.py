@@ -17,7 +17,7 @@ class PlatformError(Exception):
 
 class PlatformRequestError(PlatformError):
     """
-    Raised when an api request fails. Returned by error() method on a
+    Raised when an api request fails. Returned by raise_for_status() method on a
     PlatformResponse object returned through a callback function (relevant
     only for failure callbacks) if not raised at the core api call method.
     """
