@@ -23,6 +23,10 @@ jobs:
           python -m pip install --upgrade pip
           pip install pytest
 
+      - name: List project files (for debugging)
+        run: |
+          ls -R
+
       - name: Run tests
         run: |
-          pytest -v ./tests/
+          pytest -v $(pwd)/tests/
