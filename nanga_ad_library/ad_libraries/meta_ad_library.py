@@ -758,7 +758,7 @@ class EuropeanCountry(Enum):
 
 class MetaParam(Enum):
     """
-    Parameters available for API.
+    Parameters available for API. (https://developers.facebook.com/docs/graph-api/reference/ads_archive/)
 
     :member:
         name: Full name of the parameter.

@@ -1,0 +1,49 @@
+name: Feature request
+description: Propose a new feature to help us improve
+labels: ["enhancement"]
+
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## Thanks for taking the time to fill out this feature request!
+        ### Please read this before you proceed.
+        The Github issue tracker is intended to collect bug reports and feature requests.
+
+        - We might close feature requests without sufficient information. Please provide as much information as possible.
+        - Please check if the [feature request already exists](https://github.com/Spark-Data-Team/nanga-ad-library/labels/enhancement). We will close duplicate requests.
+
+  - type: textarea
+    id: feature-description
+    attributes:
+      label: Describe the feature you'd like to see implemented
+      description: A clear and concise description of the feature
+      placeholder: What is currently missing to this repo?
+    validations:
+      required: true
+
+  - type: textarea
+    id: use-case
+    attributes:
+      label: Use case
+      description: A use-case in which this feature could be a game-changer
+      placeholder: When or for what do you need this feature?
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected-output
+    attributes:
+      label: Expected output
+      description: A data model or a diagram to describe the output
+      placeholder: What should the API retrieve?
+    validations:
+      required: true
+
+  - type: textarea
+    id: additional-context
+    attributes:
+      label: Additional context
+      description: Add any other context about the problem here. This is a good place to include any additional screenshots, videos and/or diagrams.
+    validations:
+      required: false

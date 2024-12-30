@@ -1,0 +1,63 @@
+name: Bug Report
+description: Create a report to help us improve
+labels: ["bug"]
+
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## Thanks for taking the time to fill out this bug report!
+        ### Please read this before you proceed.
+        The Github issue tracker is intended to collect bug reports and feature requests.
+
+        - We might close bug reports without sufficient information. Either provide repro steps or help us reproduce the issue.
+        - Please check if the [bug already exists](https://github.com/Spark-Data-Team/nanga-ad-library/labels/bug). We will close duplicate reports.
+        - Use as many screenshots or videos as possible to describe what you're seeing.
+
+  - type: textarea
+    id: bug-description
+    attributes:
+      label: Describe the bug
+      description: A clear and concise description of what the bug is.
+      placeholder: Tell us what happened!
+    validations:
+      required: true
+
+  - type: textarea
+    id: repro-steps
+    attributes:
+      label: To Reproduce
+      description: Steps to reproduce the behavior (if you can reproduce the bug using the Sample Database, we will find the issue faster).
+      value: |
+        1. Go to '...'
+        2. Click on '....'
+        3. Scroll down to '....'
+        4. See error
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected-behavior
+    attributes:
+      label: Expected behavior
+      description: A clear and concise description of what you expected to happen.
+      placeholder: How should this work?
+    validations:
+      required: false
+
+  - type: input
+    id: severity
+    attributes:
+      label: Severity
+      description: |
+        How severe an issue is this bug to you? Is this annoying, blocking some users, blocking an upgrade or blocking your usage of the Nanga Ad Library entirely?
+    validations:
+      required: true
+
+  - type: textarea
+    id: additional-context
+    attributes:
+      label: Additional context
+      description: Add any other context about the problem here. This is a good place to include any additional screenshots and/or videos.
+    validations:
+      required: false
