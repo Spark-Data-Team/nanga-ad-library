@@ -19,6 +19,9 @@ dist/
 *.egg-info/
 .eggs/
 
+# Examples folders
+examples
+
 # Setuptools / Wheel / pip generated files
 *.egg
 *.wheel
