@@ -10,7 +10,7 @@ this_dir = os.path.dirname(__file__)
 readme_filename = os.path.join(this_dir, 'README.md')
 requirements_filename = os.path.join(this_dir, 'requirements.txt')
 
-PACKAGE_NAME = "nanga_ad_library"
+PACKAGE_NAME = "nanga-ad-library"
 PACKAGE_VERSION = get_sdk_version().replace("v", "")
 PACKAGE_AUTHOR = "Nanga"
 PACKAGE_AUTHOR_EMAIL = "hello@spark.do"

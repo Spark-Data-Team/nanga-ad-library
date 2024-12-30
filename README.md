@@ -16,11 +16,12 @@ one place !
 ## Table of Contents
 
 1. [Introduction](#introduction)
-2. [Installation](#installation)
-3. [Usage](#usage)
-4. [Contributing](#contributing)
-5. [License](#license)
-6. [Acknowledgements](#acknowledgements)
+2. [Roadmap](#roadmap)
+3. [Installation](#installation)
+4. [Usage](#usage)
+5. [Contributing](#contributing)
+6. [License](#license)
+7. [Acknowledgements](#acknowledgements)
 
 ## Introduction
 
@@ -39,36 +40,34 @@ details about political ads, the algorithms used for targeting, and the effectiv
 The regulations are enforced by the European Commission, and platforms that fail to comply face significant penalties,
 including fines of up to 6% of their global revenue.
 
-[Learn more about the Digital Services Act (DSA)](https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A32022R2065)
+[Learn more about the Digital Services Act (DSA)](https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A32022R2065).
 
-The Nanga Ad Library SDK allows you to query the ad library of several social media platforms.
-You only need to provide access tokens for each platform, and you'll be able to retrieve rich data about
+The DSA regulation forced the main social advertising platforms to provide public access to their ad library and the 
+Nanga Ad Library is gathering them all for you.
+
+## Roadmap
+
+New advertising platforms will soon be available in the Nanga Ad Library:
+- [X] __January 2025__: [Facebook Ad Library](https://www.facebook.com/ads/library)
+- [ ] __Q1 2025__: [Tiktok Ad Library](https://library.tiktok.com/ads)
+- [ ] __Q1 2025__: [Google Ad Library](https://adstransparency.google.com)
+- [ ] __Q1 2025__: [Microsoft Ad Library](https://adlibrary.ads.microsoft.com)
+- [ ] __Q2 2025__: [Twitter Ad Library](https://ads.twitter.com/ads-repository)
+- [ ] __Q2 2025__: [Apple Search Ad Library](https://adrepository.apple.com)
+- [ ] __Q2 2025__: [LinkedIn Ad Library](https://www.linkedin.com/ad-library/home)
 
 ## Installation
 
 You can install this package directly from PyPI using `pip`:
 ```bash
-pip install nanga_ad_library
+pip install nanga-ad-library
 ```
 
-This command will automatically download and install all required dependencies.  
+This command will automatically download and install all required dependencies.
 
-### Updating
+## Usage
 
-To update the package to the latest version, use:
-```bash
-pip install --upgrade nanga_ad_library
-```
-
-### Verifying the Installation
-
-To verify that the package was installed correctly, you can try importing the module in Python:
-```python
-import nanga_ad_library
-print(nanga_ad_library.__version__)
-```
-
-Ensure the displayed version matches the one you installed.
+Once the __Nanga Ad Library__ package is installed, you'll only need to set it up and use it as you wish.
 
 ### Prepare Ad Library for each platform
 
