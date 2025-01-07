@@ -1,11 +1,13 @@
 import json
 import curlify
+import asyncio
 
 from enum import Enum
 
 from nanga_ad_library.utils import get_sdk_version
 from nanga_ad_library.sessions import MetaGraphAPISession
 from nanga_ad_library.ad_libraries import MetaAdLibrary
+from nanga_ad_library.ad_downloaders import MetaAdDownloader
 from nanga_ad_library.exceptions import PlatformRequestError
 
 
@@ -26,33 +28,33 @@ class PlatformResponse:
             headers (optional): The http headers.
             call (optional): The original call that was made.
         """
-        self._body = body
-        self._http_status = http_status
-        self._headers = headers or {}
-        self._call = call
+        self.__body = body
+        self.__http_status = http_status
+        self.__headers = headers or {}
+        self.__call = call
 
     def body(self):
         """Returns the response body."""
-        return self._body
+        return self.__body
 
     def json(self):
         """Returns the response body -- in json if possible."""
         try:
-            return json.loads(self._body)
+            return json.loads(self.__body)
         except (TypeError, ValueError):
-            return self._body
+            return self.__body
 
     def headers(self):
         """Return the response headers."""
-        return self._headers
+        return self.__headers
 
     def status(self):
         """Returns the http status code of the response."""
-        return self._http_status
+        return self.__http_status
 
     def is_success(self):
         """Returns boolean indicating if the call was successful."""
-        return 200 <= self._http_status < 300
+        return 200 <= self.__http_status < 300
 
     def is_failure(self):
         """Returns boolean indicating if the call failed."""
@@ -66,17 +68,18 @@ class PlatformResponse:
         if self.is_failure():
             raise PlatformRequestError(
                 "Call was not successful",
-                self._call,
+                self.__call,
                 self.status(),
                 self.headers(),
                 self.body(),
             )
 
 
-class NangaAdLibraryApi:
+class NangaAdLibrary:
 
     """
     Encapsulates session attributes and methods to make API calls.
+    Also downloads ad elements by scrapping Ad Library preview card with Playwright.
 
     Attributes:
         SDK_VERSION (class): indicating sdk version.
@@ -89,36 +92,38 @@ class NangaAdLibraryApi:
         'User-Agent': "NangaAdLibrary/%s" % SDK_VERSION,
     }
 
-    def __init__(self, api_session, ad_library, verbose=None):
+    def __init__(self, sdk_session, ad_library, ad_downloader, verbose=None):
         """
-        Initiates the api instance.
+        Initiates the sdk instance.
 
         Args:
             session: PlatformSession object that contains a requests interface
                 and the attributes BASE_URL and LAST_VERSION.
         """
-        self._api_session = api_session
-        self._ad_library = ad_library
+        self.__sdk_session = sdk_session
+        self.__ad_library = ad_library
+        self.__ad_downloader = ad_downloader
 
         # Global information
-        self._num_requests_succeeded = 0
-        self._num_requests_attempted = 0
-        self._verbose = verbose or False
+        self.__num_requests_succeeded = 0
+        self.__num_requests_attempted = 0
+        self.__verbose = verbose or False
 
         # Enforce different sessions for each cursors
-        self._cursor_sessions = []
+        self.__cursor_sessions = []
 
     def __del__(self):
-        print("Nanga Ad Library API object killed")
+        if self.__verbose:
+            print("Nanga Ad Library API object killed")
         self.__dict__.clear()
 
     def get_num_requests_attempted(self):
         """Returns the number of calls attempted."""
-        return self._num_requests_attempted
+        return self.__num_requests_attempted
 
     def get_num_requests_succeeded(self):
         """Returns the number of calls that succeeded."""
-        return self._num_requests_succeeded
+        return self.__num_requests_succeeded
 
     @classmethod
     def init(cls, platform, **kwargs):
@@ -131,10 +136,13 @@ class NangaAdLibraryApi:
         # Initiate instances depending on the chosen platform
         if platform == "Meta":
             # Initiate Meta Graph Session
-            api_session = MetaGraphAPISession.init(**kwargs)
+            sdk_session = MetaGraphAPISession.init(**kwargs)
 
             # Initiate Meta Ad Library API
             ad_library = MetaAdLibrary.init(**kwargs)
+
+            # Initiate Meta Ad Downloader if "download_ads" argument is set to True
+            ad_downloader = MetaAdDownloader.init(**kwargs) if (kwargs.get("download_ads") == True) else None
 
         else:
             # To update
@@ -142,38 +150,38 @@ class NangaAdLibraryApi:
                 f"""{platform} is not yet available in the Nanga Ad Library API ({cls.SDK_VERSION})."""
             )
 
-        # Initiate NangaAdLibrary API
-        api = cls(api_session, ad_library, verbose=kwargs.get("verbose"))
+        # Initiate NangaAdLibrary
+        sdk = cls(sdk_session, ad_library, ad_downloader, verbose=kwargs.get("verbose"))
 
-        return api
+        return sdk
 
     def get_api_version(self):
-        return self._ad_library.get_api_version()
+        return self.__ad_library.get_api_version()
 
     def update_api_version(self, version: str):
-        self._ad_library.update_api_version(version)
+        self.__ad_library.update_api_version(version)
 
     def get_http_method(self):
-        return self._ad_library.get_method()
+        return self.__ad_library.get_method()
 
     def update_http_method(self, method: str):
-        self._ad_library.update_method(method)
+        self.__ad_library.update_method(method)
 
     def get_payload(self):
-        return self._ad_library.get_payload()
+        return self.__ad_library.get_payload()
 
     def reload_payload(self, payload: dict):
-        self._api_session.clean_params()
-        self._api_session.authenticate()
-        self._ad_library = self._ad_library.init(
+        self.__sdk_session.clean_params()
+        self.__sdk_session.authenticate()
+        self.__ad_library = self.__ad_library.init(
             payload=payload,
-            version=self._ad_library.get_api_version(),
-            method=self._ad_library.get_method()
+            version=self.__ad_library.get_api_version(),
+            method=self.__ad_library.get_method()
         )
 
     def get_cursor_session(self, rank):
-        if isinstance(rank, int) and (0 <= rank < len(self._cursor_sessions)):
-            return self._cursor_sessions[rank]
+        if isinstance(rank, int) and (0 <= rank < len(self.__cursor_sessions)):
+            return self.__cursor_sessions[rank]
 
     def call(self, session=None):
         """
@@ -187,28 +195,28 @@ class NangaAdLibraryApi:
         """
 
         # Increment _num_requests_attempted as soon as Call method is triggered
-        self._num_requests_attempted += 1
+        self.__num_requests_attempted += 1
 
         # When a session is provided, do not affect if
         if not session:
             # Include API headers in http request
-            self._api_session.update_headers(self.HTTP_DEFAULT_HEADERS)
+            self.__sdk_session.update_headers(self.HTTP_DEFAULT_HEADERS)
 
             # Include AdLibrary Payload to session params
-            if self._ad_library.get_payload:
-                encoded_payload = json_encode_top_level_param(self._ad_library.get_payload())
-                self._api_session.update_params(encoded_payload)
+            if self.__ad_library.get_payload:
+                encoded_payload = json_encode_top_level_param(self.__ad_library.get_payload())
+                self.__sdk_session.update_params(encoded_payload)
 
-            session = self._api_session
+            session = self.__sdk_session
 
         # Get request response and encapsulate it in a PlatformResponse
         response = session.execute(
-            method=self._ad_library.get_method(),
-            url=self._ad_library.get_final_url()
+            method=self.__ad_library.get_method(),
+            url=self.__ad_library.get_final_url()
         )
 
         # If debug logger enabled, print the request as CURL
-        if self._verbose:
+        if self.__verbose:
             print(f"New HTTP request made:\n\t{curlify.to_curl(response.request)}\n")
 
         # Prepare response
@@ -217,16 +225,16 @@ class NangaAdLibraryApi:
             headers=response.headers,
             http_status=response.status_code,
             call={
-                'method': self._ad_library.get_method(),
-                'path': self._ad_library.get_final_url(),
-                'params': self._api_session.get_params(),
-                'headers': self._api_session.get_headers(),
+                'method': self.__ad_library.get_method(),
+                'path': self.__ad_library.get_final_url(),
+                'params': self.__sdk_session.get_params(),
+                'headers': self.__sdk_session.get_headers(),
             }
         )
 
         # Increment the number of successful calls
         if platform_response.is_success():
-            self._num_requests_succeeded += 1
+            self.__num_requests_succeeded += 1
 
         return platform_response
 
@@ -236,10 +244,11 @@ class NangaAdLibraryApi:
         """
 
         response = self.call()
-        self._cursor_sessions.append(self._api_session.duplicate())
+        self.__cursor_sessions.append(self.__sdk_session.duplicate())
         results = ResultCursor(
             api=self,
-            cursor_num=len(self._cursor_sessions)-1,
+            ad_downloader=self.__ad_downloader,
+            cursor_num=len(self.__cursor_sessions)-1,
             response=response.json()
         )
 
@@ -271,6 +280,9 @@ class ObjectParser:
     def get(self, key):
         return self.__dict__.get(key)
 
+    def update(self, new_dict):
+        self.__dict__.update(new_dict)
+
     def keys(self):
         return self.__dict__.keys()
 
@@ -286,63 +298,67 @@ class ResultCursor:
     Cursor is a cursor over an object's connections.
     """
 
-    def __init__(self, api, cursor_num, response=None):
+    def __init__(self, api, cursor_num, ad_downloader=None, response=None):
         """
         Initializes a cursor with a PlatformResponse
         """
-        self._api = api
-        self._cursor_num = cursor_num
-        self._queue = []
-        self._after_token = None
-        self.process_new_response(response)
+        self.__api = api
+        self.__cursor_num = cursor_num
+        self.__ad_downloader = ad_downloader
+        self.__queue = []
+        self.__after_token = None
+        self.__process_new_response(response)
 
     def __repr__(self):
-        return str(self._queue)
+        return str(self.__queue)
 
     def __len__(self):
-        return len(self._queue)
+        return len(self.__queue)
 
     def __iter__(self):
         return self
 
     def __next__(self):
-        if not self._queue and not self.load_next_page():
+        if not self.__queue and not self.__load_next_page():
             raise StopIteration()
 
-        return self._queue.pop(0)
+        return self.__queue.pop(0)
 
     def __getitem__(self, index):
-        return self._queue[index]
+        return self.__queue[index]
 
-    def process_new_response(self, response):
+    def __process_new_response(self, response):
         if "data" in response:
-            self._queue += [ObjectParser(**row) for row in response["data"]]
+            new_batch = [ObjectParser(**row) for row in response["data"]]
+            if self.__ad_downloader:
+                new_batch = asyncio.run(self.__ad_downloader.download_from_new_batch(new_batch))
+            self.__queue += new_batch
         if (
                 'paging' in response and
                 'cursors' in response['paging'] and
                 'after' in response['paging']['cursors'] and
                 'next' in response['paging']
         ):
-            self._after_token = response["paging"]["cursors"]["after"]
+            self.__after_token = response["paging"]["cursors"]["after"]
         else:
-            self._after_token = None
+            self.__after_token = None
 
-    def load_next_page(self):
+    def __load_next_page(self):
         """Queries server for more nodes and loads them into the internal queue.
         Returns:
             True if successful, else False.
         """
 
-        if not self._after_token:
+        if not self.__after_token:
             return False
 
-        session = self._api.get_cursor_session(self._cursor_num)
+        session = self.__api.get_cursor_session(self.__cursor_num)
         if session:
-            session.update_params({"after": self._after_token})
-            platform_response = self._api.call(session)
-            self.process_new_response(platform_response.json())
+            session.update_params({"after": self.__after_token})
+            platform_response = self.__api.call(session)
+            self.__process_new_response(platform_response.json())
 
-        return len(self._queue) > 0
+        return len(self.__queue) > 0
 
 
 """

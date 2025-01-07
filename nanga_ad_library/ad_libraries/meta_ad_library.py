@@ -2,13 +2,7 @@ import warnings
 
 from enum import Enum
 
-from nanga_ad_library.utils import (
-    check_param_type,
-    check_param_value,
-    enforce_date_param_format,
-    get_default_api_version,
-    compare_version_to_default
-)
+from nanga_ad_library.utils import *
 
 """
 Define MetaAdLibrary class to prepare api request:
@@ -32,21 +26,20 @@ class MetaAdLibrary:
         """Initializes the object's internal data.
         Args:
             payload: The payload provided by the user.
-            version (optional): The response body as text.
         """
 
         # Retrieves all url components to prepare final_url to query
-        self._base_url = self.BASE_URL
-        self._endpoint = self.ENDPOINT
-        self._version = get_default_api_version(self.API_NAME)
+        self.__base_url = self.BASE_URL
+        self.__endpoint = self.ENDPOINT
+        self.__version = get_default_api_version(self.API_NAME)
 
         # Other useful components
-        self._target_political_ads = False
+        self.__target_political_ads = False
 
         # Components to use in api module
-        self._method = self.METHOD
-        self._final_url = f"{self._base_url}/{self._version}/{self._endpoint}"
-        self._payload = payload
+        self.__method = self.METHOD
+        self.__final_url = f"{self.__base_url}/{self.__version}/{self.__endpoint}"
+        self.__payload = payload
 
     def __del__(self):
         print("Meta Ad Library object killed")
@@ -60,42 +53,42 @@ class MetaAdLibrary:
         return payload.get("ad_type") == "POLITICAL_AND_ISSUE_ADS"
 
     def get_api_version(self):
-        return self._version
+        return self.__version
 
     def update_api_version(self, new_version):
-        self._version = compare_version_to_default(new_version, self._version)
+        self.__version = compare_version_to_default(new_version, self.__version)
 
     def get_method(self):
-        return self._method
+        return self.__method
 
     def update_method(self, method: str):
         # Check provided method is valid
         MetaLibraryHttpMethods.check_method(method)
         # Update stored method
-        self._method = method
+        self.__method = method
 
     def get_final_url(self):
-        return self._final_url
+        return self.__final_url
 
     def get_payload(self):
-        return self._payload
+        return self.__payload
 
     def update_payload(self, payload: dict):
         """"
         Update the payload or part of it with params dict
         """
         # Check if target_political_ads needs to be updated
-        self._target_political_ads = self._target_political_ads or self.check_political_ads_targeting(payload)
+        self.__target_political_ads = self.__target_political_ads or self.check_political_ads_targeting(payload)
 
         # Check that the provided dict is valid
         for param_name, param_value in payload.items():
             if param_name == "fields":
-                self._payload[param_name] = MetaField.review_fields(param_value)
+                self.__payload[param_name] = MetaField.review_fields(param_value)
             else:
-                self._payload[param_name] = MetaParam.ensure_validity(
+                self.__payload[param_name] = MetaParam.ensure_validity(
                     param_name,
                     param_value,
-                    self._target_political_ads
+                    self.__target_political_ads
                 )
 
     @classmethod
@@ -128,7 +121,7 @@ class MetaAdLibrary:
 
         # Create MetaAdLibrary object and add elements
         library = cls(params)
-        library._target_political_ads = target_political_ads
+        library.__target_political_ads = target_political_ads
         if kwargs.get("version"):
             library.update_api_version(kwargs.get("version"))
         if kwargs.get("method"):
