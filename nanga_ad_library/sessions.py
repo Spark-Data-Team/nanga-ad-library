@@ -32,11 +32,11 @@ class ApiSession(object):
         """
 
         # Initiate requests Session
-        self._requests_session = requests.Session()
-        self._params = params or {}
-        self._timeout = timeout
-        self._max_retries, self._backoff_factor = None, None
-        self._verbose = False
+        self.__requests_session = requests.Session()
+        self.__params = params or {}
+        self.__timeout = timeout
+        self.__max_retries, self.__backoff_factor = None, None
+        self.__verbose = False
 
         # Update all needed session attributes
         self.update_headers(
@@ -50,33 +50,34 @@ class ApiSession(object):
         self.update_proxies(proxies)
 
         # Print a message if verbose
-        self._verbose = verbose or False
-        self._log_update(creation=True)
+        self.__verbose = verbose or False
+        self.__log_update(creation=True)
 
     def __del__(self):
-        print("API session object killed")
-        self._requests_session.close()
+        if self.__verbose:
+            print("API session object killed")
+        self.__requests_session.close()
         self.__dict__.clear()
 
-    def _log_update(self, creation=False):
-        if self._verbose:
+    def __log_update(self, creation=False):
+        if self.__verbose:
             print("New API session initiated" if creation else "API session updated")
             self.display_session_attributes()
 
     def get_headers(self):
-        return self._requests_session.headers
+        return self.__requests_session.headers
 
     def update_headers(self, headers):
         if headers:
-            self._requests_session.headers.update(headers)
-            self._log_update()
+            self.__requests_session.headers.update(headers)
+            self.__log_update()
 
     def clean_headers(self):
-        self._requests_session.headers = self.DEFAULT_HEADERS
-        self._log_update()
+        self.__requests_session.headers = self.DEFAULT_HEADERS
+        self.__log_update()
 
     def get_retries_params(self):
-        return self._max_retries, self._backoff_factor
+        return self.__max_retries, self.__backoff_factor
 
     def update_retries(self, max_retries, backoff_factor):
         if max_retries and backoff_factor:
@@ -86,62 +87,62 @@ class ApiSession(object):
                 status_forcelist=[500, 502, 503, 504]
             )
             adapter = HTTPAdapter(max_retries=retries)
-            self._requests_session.mount("http://", adapter)
-            self._requests_session.mount("https://", adapter)
-            self._max_retries, self._backoff_factor = max_retries, backoff_factor
-            self._log_update()
+            self.__requests_session.mount("http://", adapter)
+            self.__requests_session.mount("https://", adapter)
+            self.__max_retries, self.__backoff_factor = max_retries, backoff_factor
+            self.__log_update()
 
     def remove_retries(self):
-        self._requests_session.adapters.clear()
-        self._max_retries, self._backoff_factor = None, None
-        self._log_update()
+        self.__requests_session.adapters.clear()
+        self.__max_retries, self.__backoff_factor = None, None
+        self.__log_update()
 
     def get_ssl_config(self):
-        return self._requests_session.verify
+        return self.__requests_session.verify
 
     def update_ssl_config(self, cert_path):
-        self._requests_session.verify = cert_path if cert_path else True
-        self._log_update()
+        self.__requests_session.verify = cert_path if cert_path else True
+        self.__log_update()
 
     def remove_ssl_config(self):
-        self._requests_session.verify = True
-        self._log_update()
+        self.__requests_session.verify = True
+        self.__log_update()
 
     def get_proxies(self):
-        return self._requests_session.proxies
+        return self.__requests_session.proxies
 
     def update_proxies(self, proxies):
         if proxies:
-            self._requests_session.proxies.update(proxies)
-            self._log_update()
+            self.__requests_session.proxies.update(proxies)
+            self.__log_update()
 
     def clean_proxies(self):
-        self._requests_session.proxies = {}
-        self._log_update()
+        self.__requests_session.proxies = {}
+        self.__log_update()
 
     def get_params(self):
-        return self._params
+        return self.__params
 
     def update_params(self, params):
         if params:
-            self._params.update(params)
-            self._log_update()
+            self.__params.update(params)
+            self.__log_update()
 
     def clean_params(self):
-        self._params = {}
-        self._log_update()
+        self.__params = {}
+        self.__log_update()
 
     def get_timeout(self):
-        return self._timeout
+        return self.__timeout
 
     def update_timeout(self, timeout):
         if timeout:
-            self._timeout = timeout
-            self._log_update()
+            self.__timeout = timeout
+            self.__log_update()
 
     def remove_timeout(self):
-        self._timeout = None
-        self._log_update()
+        self.__timeout = None
+        self.__log_update()
 
     def display_session_attributes(self):
         max_retries, backoff_factor = self.get_retries_params()
@@ -161,16 +162,16 @@ class ApiSession(object):
             "method": method,
             "url": url,
         }
-        if self._timeout:
-            kwargs["timeout"] = self._timeout
-        if self._params:
+        if self.__timeout:
+            kwargs["timeout"] = self.__timeout
+        if self.__params:
             if method in ["GET", "HEADERS", "DELETE"]:
-                kwargs["params"] = self._params
+                kwargs["params"] = self.__params
             else:
-                kwargs["data"] = self._params
+                kwargs["data"] = self.__params
 
         # Launch request
-        response = self._requests_session.request(**kwargs)
+        response = self.__requests_session.request(**kwargs)
 
         return response
 
@@ -179,14 +180,14 @@ class ApiSession(object):
         Initiate a new Api Session object with the same attributes as self.
         """
         new_api_session = ApiSession(
-            cert_path=self._requests_session.verify,
-            proxies=self._requests_session.proxies,
-            headers=self._requests_session.headers,
-            params=self._params,
-            max_retries=self._max_retries,
-            backoff_factor=self._backoff_factor,
-            timeout=self._timeout,
-            verbose=self._verbose
+            cert_path=self.__requests_session.verify,
+            proxies=self.__requests_session.proxies,
+            headers=self.__requests_session.headers,
+            params=self.__params,
+            max_retries=self.__max_retries,
+            backoff_factor=self.__backoff_factor,
+            timeout=self.__timeout,
+            verbose=self.__verbose
         )
 
         return new_api_session
@@ -225,7 +226,7 @@ class MetaGraphAPISession(ApiSession):
         self.access_token = access_token
         self.app_secret = app_secret
 
-    def _gen_app_secret_proof(self):
+    def __gen_app_secret_proof(self):
         """
         Generate a secret proof for Meta GRAPH API using app_secret and access_token.
         """
@@ -246,7 +247,7 @@ class MetaGraphAPISession(ApiSession):
             "access_token": self.access_token,
         }
         if self.app_secret:
-            params["appsecret_proof"] = self._gen_app_secret_proof()
+            params["appsecret_proof"] = self.__gen_app_secret_proof()
         # Update Api Session params with params dict
         self.update_params(params)
 

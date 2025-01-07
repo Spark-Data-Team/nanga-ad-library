@@ -1,17 +1,14 @@
 import os
-try:
-    from setuptools import setup
-except ImportError:
-    from distutils.core import setup
 
-from nanga_ad_library.utils import get_sdk_version
+from setuptools import setup
+
 
 this_dir = os.path.dirname(__file__)
 readme_filename = os.path.join(this_dir, 'README.md')
 requirements_filename = os.path.join(this_dir, 'requirements.txt')
 
 PACKAGE_NAME = "nanga-ad-library"
-PACKAGE_VERSION = get_sdk_version().replace("v", "")
+PACKAGE_VERSION = "1.0.0"
 PACKAGE_AUTHOR = "Nanga"
 PACKAGE_AUTHOR_EMAIL = "hello@spark.do"
 PACKAGE_URL = "https://github.com/Spark-Data-Team/nanga-ad-library"
