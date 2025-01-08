@@ -103,6 +103,12 @@ query_hash = {
 }
 init_hash.update(query_hash)
 
+# Choose if ads elements will be downloaded (Title, Body, Description, Image or Video, Call to action)
+download_hash = {
+    "download_ads": True
+}
+init_hash.update(download_hash)
+
 # Initiating api
 api = NangaAdLibraryApi.init(platform=platform, **init_hash)
 
