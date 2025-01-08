@@ -295,8 +295,14 @@ class MetaSessionMandatoryArgs(Enum):
         """
         Check that all arguments needed to initiate a MetaGraphAPISession are provided in kwargs.
 
-        :param kwargs: Args dict received in NANGA_AD_LIBRARY initiation.
-        :return: Whether all mandatory arguments are provided.
+        Args:
+            kwargs: Args dict received during NANGA_AD_LIBRARY initiation.
+
+        Returns:
+             Whether all mandatory arguments are provided.
+
+        Raises:
+            ValueError if some mandatory arguments are missing.
         """
         needed_args = {member.value for member in cls}
         provided_args = set(kwargs.keys())

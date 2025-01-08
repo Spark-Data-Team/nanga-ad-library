@@ -129,9 +129,14 @@ class NangaAdLibrary:
     def init(cls, platform, **kwargs):
         """
 
-        :param platform:
-        :param kwargs:
-        :return:
+
+        Args:
+            platform: The platform of the Ad Library you want to
+            **kwargs: A payload with all arguments needed to query platform Ad Library
+                #TODO (add doc + provide template for the kwargs depending on the platform)
+
+        Returns:
+            A NangaAdLibrary object, ready to extract valuable data.
         """
         # Initiate instances depending on the chosen platform
         if platform == "Meta":
@@ -190,6 +195,7 @@ class NangaAdLibrary:
         Returns:
             A PlatformResponse object containing the response body, headers,
             http status, and summary of the call that was made.
+
         Raises:
             PlatformResponse.raise_for_status() to check if the request failed.
         """
@@ -328,6 +334,10 @@ class ResultCursor:
         return self.__queue[index]
 
     def __process_new_response(self, response):
+        """ [Hidden method]
+        Add new API response to the cursor queue (first download and add to response ad elements if needed).
+        Stores the "after_token" (if any) to be able to query the following records from API.
+        """
         if "data" in response:
             new_batch = [ObjectParser(**row) for row in response["data"]]
             if self.__ad_downloader:
@@ -344,7 +354,9 @@ class ResultCursor:
             self.__after_token = None
 
     def __load_next_page(self):
-        """Queries server for more nodes and loads them into the internal queue.
+        """ [Hidden method]
+        Queries server for more nodes and loads them into the internal queue.
+
         Returns:
             True if successful, else False.
         """
@@ -401,8 +413,11 @@ def json_encode_top_level_param(params):
     """
     Encodes certain types of values in the `params` dictionary into JSON format.
 
-    :param params: A dictionary containing the parameters to encode.
-    :return: A dictionary with some parameters encoded in JSON.
+    Args:
+        params: A dictionary containing the parameters to encode.
+
+    Returns:
+        A dictionary with some parameters encoded in JSON.
     """
     # Create a copy of the parameters to avoid modifying the original
     params = params.copy()
