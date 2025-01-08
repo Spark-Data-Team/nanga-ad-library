@@ -13,9 +13,11 @@ def check_version_format(version: str):
     """
     Check that the provided version is matching the standard pattern (v12.34.56 for instance)
 
-    :param version: The string to check: must match the standard pattern.
-    :raise:
-        Raise a ValueError if the provided version is not matching the standard pattern for API versions.
+    Args:
+        version: The string to check: must match the standard pattern.
+
+    Raises:
+        ValueError if the provided version is not matching the standard pattern for API versions.
     """
 
     # Use the version regexp to check if the provided version string is matching the pattern
@@ -32,11 +34,15 @@ def compare_version_to_default(required_version: str, default_version: str):
     """
     Check that the version the user asked for is anterior or equal to the latest version used in the SDK.
 
-    :param required_version: The version required by the user.
-    :param default_version: The version stored in api_config file.
-    :return:
-        The version the user asked for if it is consistent with the default version stored.
-        Else raise a warning and return the default version.
+    Args:
+        required_version: The version required by the user.
+        default_version: The version stored in api_config file.
+
+    Returns:
+        The version the user asked for if it is consistent with the default version stored else the default version.
+
+    Raises:
+        A warning if the provided version is not valid.
     """
 
     # Use the version regexp to split each version in two parts
@@ -87,8 +93,10 @@ def get_default_api_version(api_name: str):
     """
     Retrieve the latest API version from ad_libraries_config file using api_name.
 
-    :param api_name: Name of the platform API.
-    :return:
+    Args:
+        api_name: Name of the platform API.
+
+    Returns:
         The version of the API stored in ad_libraries_config file.
     """
 
@@ -111,7 +119,7 @@ def get_sdk_version():
     """
     Retrieve the version of the SDK from __init__ file.
 
-    :return:
+    Returns:
         The stored version of the SDK.
     """
 

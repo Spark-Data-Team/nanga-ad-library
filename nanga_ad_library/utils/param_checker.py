@@ -9,13 +9,15 @@ def check_param_value(param: str, value: str, accepted_values: list, is_list: bo
     """
     Checks that the parameter value is one of the expected value (platform Ad Library API request).
 
-    :param param: Parameter name (used to query platform API).
-    :param value: Parameter value.
-    :param accepted_values: List of accepted values for this param.
-    :param is_list: Indicates if the param value is expected to be a list.
-        If True checks that all elements are one of the expected value.
-    :return:
-        Nothing, raise issue if parameter value is not available.
+    Args:
+        param: Parameter name (used to query platform API).
+        value: Parameter value.
+        accepted_values: List of accepted values for this param.
+        is_list: Indicates if the param value is expected to be a list.
+            If True checks that all elements are one of the expected value.
+
+    Raises:
+        ValueError if parameter value is not available.
     """
     # Stringify the list of accepted values (to display in error if needed)
     accepted_values_str = "\n\t- ".join(accepted_values)
@@ -52,13 +54,16 @@ def check_param_type(param: str, value: str, types: tuple, is_list: bool):
     """
     Checks that the parameter value is of one of the expected types (platform Ad Library API request).
 
-    :param param: Parameter name (used to query platform API).
-    :param value: Parameter value.
-    :param types: Expected types of the param value.
-        If empty then all types are accepted.
-    :param is_list: Indicates if the param value is expected to be a list.
-        If True checks that all elements are of one of the expected types.
-    :return: Nothing, raise issue if parameter value is not available.
+    Args:
+        param: Parameter name (used to query platform API).
+        value: Parameter value.
+        types: Expected types of the param value.
+            If empty then all types are accepted.
+        is_list: Indicates if the param value is expected to be a list.
+            If True checks that all elements are of one of the expected types.
+
+    Raises:
+        ValueError if parameter value is not available.
     """
 
     # For lists, check that all elements are of one of the expected types
@@ -91,10 +96,16 @@ def enforce_date_param_format(param: str, value: str, date_format="%Y-%m-%d"):
     """
     Checks that the parameter value is a valid date and format it using date_format.
 
-    :param param: Parameter name (used to query platform API).
-    :param value: Parameter value.
-    :param date_format: Date format expected in the API.
-    :return: The date string to use in request (reformated using date_format format if needed).
+    Args:
+        param: Parameter name (used to query platform API).
+        value: Parameter value.
+        date_format: Date format expected in the API.
+
+    Returns:
+        The date string to use in request (reformatted using date_format format if needed).
+
+    Raises:
+        ValueError if parameter value is not available.
     """
 
     try:

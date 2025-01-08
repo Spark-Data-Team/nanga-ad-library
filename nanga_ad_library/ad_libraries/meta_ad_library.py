@@ -24,6 +24,7 @@ class MetaAdLibrary:
 
     def __init__(self, payload):
         """Initializes the object's internal data.
+
         Args:
             payload: The payload provided by the user.
         """
@@ -96,8 +97,8 @@ class MetaAdLibrary:
         """
         Process the provided payload and create a MetaAdLibrary object if everything is fine
 
-        :return:
-            A new MetaAdLibrary object
+        Returns:
+            A new MetaAdLibrary object.
         """
         # Check kwargs has mandatory arguments
         MetaLibraryMandatoryArgs.check_arguments(**kwargs)
@@ -146,8 +147,11 @@ class MetaLibraryMandatoryArgs(Enum):
         """
         Check that all parameters needed to initiate a MetaAdLibrary object are provided in kwargs.
 
-        :param kwargs: Args dict received in NANGA_AD_LIBRARY initiation.
-        :return: Whether all mandatory arguments are provided.
+        Args:
+            kwargs: Args dict received in NANGA_AD_LIBRARY initiation.
+
+        Returns:
+             Whether all mandatory arguments are provided.
         """
         needed_args = {member.value for member in cls}
         provided_args = set(kwargs.keys())
@@ -171,8 +175,10 @@ class MetaLibraryHttpMethods(Enum):
         """
         Check that provided method is an allowed HTTP method for the Meta Ad Library.
 
-        :param method: HTTP method to use to query
-        :raise:
+        Args:
+             method: HTTP method to use to query
+
+        Raises:
             ValueError if the method is not allowed.
         """
 
@@ -200,7 +206,7 @@ class AdStatus(Enum):
 
 class AdCountry(Enum):
     """
-        Values available for ad_reached_countries parameter.
+    Values available for ad_reached_countries parameter.
     """
     ALL = "ALL"
     BRAZIL = "BR"
@@ -453,7 +459,7 @@ class AdCountry(Enum):
 
 class AdType(Enum):
     """
-        Values available for ad_type parameter.
+    Values available for ad_type parameter.
     """
     ALL = "ALL"
     EMPLOYMENT_ADS = "EMPLOYMENT_ADS"
@@ -464,7 +470,7 @@ class AdType(Enum):
 
 class AudienceSizeMax(Enum):
     """
-        Values available for estimated_audience_size_max parameter.
+    Values available for estimated_audience_size_max parameter.
     """
     _1K = 1000
     _5K = 5000
@@ -477,7 +483,7 @@ class AudienceSizeMax(Enum):
 
 class AudienceSizeMin(Enum):
     """
-        Values available for estimated_audience_size_min parameter.
+    Values available for estimated_audience_size_min parameter.
     """
     _1H = 100
     _1K = 1000
@@ -491,8 +497,8 @@ class AudienceSizeMin(Enum):
 
 class AdLanguages(Enum):
     """
-        Values available for languages parameter.
-        Language codes are based on the ISO 639-1 language codes and also includes ISO 639-3 language codes CMN and YUE
+    Values available for languages parameter.
+    Language codes are based on the ISO 639-1 language codes and also includes ISO 639-3 language codes CMN and YUE
     """
     # ISO 639-1 codes
     AFAR = "aa"
@@ -686,7 +692,7 @@ class AdLanguages(Enum):
 
 class MediaType(Enum):
     """
-        Values available for media_type parameter.
+    Values available for media_type parameter.
     """
     ALL = "ALL"
     IMAGE = "IMAGE"
@@ -697,7 +703,7 @@ class MediaType(Enum):
 
 class AdPlacement(Enum):
     """
-        Values available for publisher_platforms parameter.
+    Values available for publisher_platforms parameter.
     """
     FACEBOOK = "FACEBOOK"
     INSTAGRAM = "INSTAGRAM"
@@ -710,7 +716,7 @@ class AdPlacement(Enum):
 
 class SearchType(Enum):
     """
-        Values available for search_type parameter.
+    Values available for search_type parameter.
     """
     THREADS = "THREADS"
     KEYWORD_EXACT_PHRASE = "KEYWORD_EXACT_PHRASE"
@@ -718,7 +724,7 @@ class SearchType(Enum):
 
 class EuropeanCountry(Enum):
     """
-        Values available for ad_reached_countries parameter that match EU countries.
+    Values available for ad_reached_countries parameter that match EU countries.
     """
     AUSTRIA = "AT"
     BELGIUM = "BE"
@@ -753,7 +759,7 @@ class MetaParam(Enum):
     """
     Parameters available for API. (https://developers.facebook.com/docs/graph-api/reference/ads_archive/)
 
-    :member:
+    Members:
         name: Full name of the parameter.
         class: Class (Enum) listing the available values for this parameter.
         only_political: Whether the parameter is available only for 'POLITICAL_AND_ISSUE_ADS' requests.
@@ -979,10 +985,12 @@ class MetaParam(Enum):
         Check that a parameter provided value is valid for the Meta Ad Library API
             (cf https://developers.facebook.com/docs/graph-api/reference/ads_archive/)
 
-        :param param_name: The parameter name.
-        :param param_value: The parameter value.
-        :param target_political_ads: Whether the request made by the user is targeting only political ads.
-        :return:
+        Args:
+            param_name: The parameter name.
+            param_value: The parameter value.
+            target_political_ads: Whether the request made by the user is targeting only political ads.
+
+        Returns:
             The value of the parameter, updated if needed.
             Raise a ValueError if the provided value is not compatible with API standards.
         """
@@ -1053,9 +1061,11 @@ class MetaParam(Enum):
         """
         Checks that all mandatory params are provided.
 
-        :param params: The params provided by the user.
-        :raise:
-            Raise a ValueError if at least one parameter is missing.
+        Args:
+             params: The params provided by the user.
+
+        Raises:
+            ValueError if at least one parameter is missing.
         """
 
         # Retrieve mandatory params using "mandatory_level" key
@@ -1096,7 +1106,7 @@ class MetaField(Enum):
     Available values for Meta Ad Library returned fields (All ads from all countries).
     Cf https://developers.facebook.com/docs/graph-api/reference/archived-ad/
 
-    :member:
+    Members:
         name: Field's name to provide to Meta GRAPH API.
         mandatory: Whether the field is expected to be provided to Meta GRAPH API.
         warning: Warning message to display when the field is provided in the request. (Special behaviours)
@@ -1244,10 +1254,15 @@ class MetaField(Enum):
     @classmethod
     def review_fields(cls, fields: list):
         """
+        Checks that:
+            - mandatory fields are listed (else add them),
+            - no unwanted fields are listed (else remove them).
 
-        :param fields:
-        :return:
-            The reviewed fields: unexpected fields are removed,
+        Args:
+            fields: The fields to query from the Meta Ad Library API
+
+        Returns:
+            The fields: reviewed and updated (if needed)
         """
 
         # Store fields in a dict

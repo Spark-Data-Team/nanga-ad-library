@@ -11,11 +11,11 @@ Define MetaAdDownloader class to retrieve ad elements using Playwright.
 
 class MetaRequestInterceptor:
     """
-    A class used to intercept requests from Meta Ad Library preview while downloading ad elements.
-
-    Blocks video requests (Meta blocks access to video when it detects we are scrapping).
-    Stores video and image urls in self.__intercepted_videos and self.__intercepted_images:
-        We use them to extract video url and thumbnail from the preview bypassing Meta protection.
+    A class designed to passively intercept network requests from the Meta Ad Library preview while downloading
+      ad elements (Title, Body, Description, Image url, Video url and Call to action).
+    It blocks direct video requests (to avoid detection) and captures video and image URLs instead.
+    These URLs are stored for extracting video links and thumbnails (in __intercepted_videos & __intercepted_images),
+      enabling a bypass of Meta's anti-scraping measures.
     """
 
     def __init__(self, verbose):
@@ -54,11 +54,12 @@ class MetaRequestInterceptor:
 
 class MetaAdDownloader:
     """
-    A class instancing a scrapper to retrieve elements from Meta Ad Library previews.
-
-    Adds extracted elements to each ad from a batch using the preview.
+    A class instancing a scraper to retrieve elements from Meta Ad Library previews:
+      Body, Title*, Image*, Video*, Description*, Landing page*, CTA caption*
+      - "*" tagged elements are retrieved for each creative visual (1 for statics, several for carousels)
     """
 
+    # Store the field used to store the Meta Ad Library preview url (specific to Meta)
     PREVIEW_FIELD = "ad_snapshot_url"
 
     def __init__(self, verbose=False):
@@ -69,7 +70,7 @@ class MetaAdDownloader:
         """
         Process the provided payload and create a MetaAdDownloader object if everything is fine
 
-        :return:
+        Returns:
             A new MetaAdDownloader object
         """
 
@@ -82,11 +83,11 @@ class MetaAdDownloader:
         return ad_downloader
 
     def __install_chromium_browser_async(self, with_deps=True):
-        """
+        """ [Hidden method]
         Install Playwright chromium browser (async)
 
         Args:
-            with_deps (bool, optional): Wether deps have to be installed too.
+            with_deps (bool, optional): Whether deps have to be installed too.
         """
 
         # Install cmd arguments
@@ -109,8 +110,11 @@ class MetaAdDownloader:
         """
         Use parallelized calls to download ad elements for each row of a batch
 
-        :param ad_library_batch: A list of records from
-        :return: The updated batch with new key "ad_elements"
+        Args:
+            ad_library_batch: A list of records from a ResponseCursor object.
+
+        Returns:
+             The updated batch with new key "ad_elements".
         """
 
         async with async_playwright() as p:
@@ -129,11 +133,14 @@ class MetaAdDownloader:
 
     async def __download_ad_elements(self, browser, ad_payload):
         """ [Hidden method]
-        Use scrapping to extract all ad elements from the ad preview url.
+        Use scraping to extract all ad elements from the ad preview url.
 
-        :param browser: A playwright browser.
-        :param preview: The url of the Meta Ad Library preview
-        :return: A dict with the downloaded ad elements.
+        Args:
+            browser: A playwright browser.
+            ad_payload: The ad payload (response from Ad Library API).
+
+        Returns:
+            A dict with the downloaded ad elements.
         """
 
         # Extract preview url from ad payload
@@ -155,7 +162,7 @@ class MetaAdDownloader:
         # Activate page requests interception
         await page.route("**/*", interceptor.intercept)
 
-        # Open Ad Library card and wait until all requests are finished / Increase nav timeout to 60s
+        # Open Ad Library card and wait until all requests are finished / Increase nav timeout to 5 minutes.
         await page.goto(preview, timeout=300000)
         await page.wait_for_load_state("networkidle")
 
@@ -300,8 +307,6 @@ class MetaAdDownloader:
                 creative["description"] = await description_locator[0].inner_html()
             # Add to list
             ad_elements["carousel"].append(creative)
-
-        # time.sleep(60)
 
         # Close used browser page
         await page.close()

@@ -1,20 +1,39 @@
-### Summary
+# Pull Request Title
 
-\_Provide an overview...
+## Description
+<!-- Provide a concise description of the changes introduced by this PR. -->
 
-### Details
+## Related Issue
+<!-- Link to the issue this PR addresses (e.g., closes #123). -->
+Closes #IssueNumber
 
-\_Add more content to describe the changes...
+## Type of Change
+<!-- Please delete options that are not relevant. -->
+- [ ] Bug fix
+- [ ] New feature
+- [ ] Documentation update
+- [ ] Refactoring
+- [ ] Style (formatting, etc.)
+- [ ] Other (please specify):
 
-### Reference
+## How Has This Been Tested?
+<!-- Describe the tests you've run to verify your changes. -->
+- Test 1
+- Test 2
+- Test 3
 
-[Issue for instance](https://airtable.com/app8gA9M46hqIfBPO/tblOkJO3J4H7C15au/)
+## Screenshots (if applicable)
+<!-- Add screenshots to help explain your changes. -->
+![Screenshot Description](URL)
 
-### Checks
+## Checklist
+- [ ] My code follows the project's coding style.
+- [ ] I have performed a self-review of my own code.
+- [ ] I have commented my code, particularly in hard-to-understand areas.
+- [ ] I have added necessary documentation (if applicable).
+- [ ] My changes generate no new warnings.
+- [ ] I have added tests that prove my fix is effective or that my feature works.
+- [ ] All new and existing tests pass locally with my changes.
 
-- [ ] Tested changes:
-  - [Link check sql query](https://app.snowflake.com/us-east-1/eka42928)
-  - [Other useful checks](https://docs.google.com/spreadsheets/)
-  - Check comment:
-- [ ] Version updated.
-- [ ] Code modification approved by other Nanga members.
+## Additional Information
+<!-- Any additional context or information related to this PR. -->
