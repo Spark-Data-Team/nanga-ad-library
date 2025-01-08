@@ -2,77 +2,21 @@ import json
 import curlify
 import asyncio
 
-from enum import Enum
-
-from nanga_ad_library.utils import get_sdk_version
+from nanga_ad_library.utils import (
+    PlatformResponse,
+    ObjectParser,
+    json_encode_top_level_param,
+    get_sdk_version
+)
 from nanga_ad_library.sessions import MetaGraphAPISession
 from nanga_ad_library.ad_libraries import MetaAdLibrary
 from nanga_ad_library.ad_downloaders import MetaAdDownloader
-from nanga_ad_library.exceptions import PlatformRequestError
 
 
 """
-The api module contains classes that make http requests to various platforms Ad Library APIs.
+The sdk module contains the main classe NangaAdLibrary which allows you to make requests to the platform Ad Library API
+  and extracts/shapes the results using ResultCursor.
 """
-
-
-class PlatformResponse:
-
-    """Encapsulates a http response from the nanga Ad Library API."""
-
-    def __init__(self, body=None, http_status=None, headers=None, call=None):
-        """Initializes the object's internal data.
-        Args:
-            body (optional): The response body as text.
-            http_status (optional): The http status code.
-            headers (optional): The http headers.
-            call (optional): The original call that was made.
-        """
-        self.__body = body
-        self.__http_status = http_status
-        self.__headers = headers or {}
-        self.__call = call
-
-    def body(self):
-        """Returns the response body."""
-        return self.__body
-
-    def json(self):
-        """Returns the response body -- in json if possible."""
-        try:
-            return json.loads(self.__body)
-        except (TypeError, ValueError):
-            return self.__body
-
-    def headers(self):
-        """Return the response headers."""
-        return self.__headers
-
-    def status(self):
-        """Returns the http status code of the response."""
-        return self.__http_status
-
-    def is_success(self):
-        """Returns boolean indicating if the call was successful."""
-        return 200 <= self.__http_status < 300
-
-    def is_failure(self):
-        """Returns boolean indicating if the call failed."""
-        return not self.is_success()
-
-    def raise_for_status(self):
-        """
-        Raise a PlatformRequestError (located in the exceptions module) with
-        an appropriate debug message if the request failed.
-        """
-        if self.is_failure():
-            raise PlatformRequestError(
-                "Call was not successful",
-                self.__call,
-                self.status(),
-                self.headers(),
-                self.body(),
-            )
 
 
 class NangaAdLibrary:
@@ -97,8 +41,11 @@ class NangaAdLibrary:
         Initiates the sdk instance.
 
         Args:
-            session: PlatformSession object that contains a requests interface
+            sdk_session: {Platform}Session object that contains a requests interface
                 and the attributes BASE_URL and LAST_VERSION.
+            ad_library: {Platform}AdLibrary object that stores all parameters and useful data to help query the API
+            ad_downloader: {Platform}Downloader object that will scrap preview URL and extract
+                ad elements (Title, Body, Image, Video, CTA, ...) 
         """
         self.__sdk_session = sdk_session
         self.__ad_library = ad_library
@@ -261,44 +208,6 @@ class NangaAdLibrary:
         return results
 
 
-class ObjectParser:
-    """
-    ObjectParser instances are initialized with a dictionary describing their attributes.
-        Usage example:
-            >>> dict_to_parse = {"name": "nanga", "description": "the best digital marketing SaaS available"}
-            >>> ad_library = ObjectParser(**dict_to_parse)
-            >>> print(f"Welcome to {ad_library.name}: {ad_library.description}")
-            Welcome to nanga: the best digital marketing SaaS available
-
-    Attributes can be accessed using object.field, object["field"], or object.get("field").
-    It also have the standard dict methods: .keys(), .values() and .items()
-    """
-
-    def __repr__(self):
-        return json.dumps(self.__dict__)
-
-    def __init__(self, **kwargs):
-        self.__dict__ = kwargs
-
-    def __getitem__(self, key):
-        return self.__dict__[key]
-
-    def get(self, key):
-        return self.__dict__.get(key)
-
-    def update(self, new_dict):
-        self.__dict__.update(new_dict)
-
-    def keys(self):
-        return self.__dict__.keys()
-
-    def values(self):
-        return self.__dict__.values()
-
-    def items(self):
-        return self.__dict__.items()
-
-
 class ResultCursor:
     """
     Cursor is a cursor over an object's connections.
@@ -371,69 +280,3 @@ class ResultCursor:
             self.__process_new_response(platform_response.json())
 
         return len(self.__queue) > 0
-
-
-"""
-Enum classes: 
-    Used to check given parameters for each platform session class
-"""
-
-
-class HttpMethod(Enum):
-    """
-    Available HTTP methods (cf https://en.wikipedia.org/wiki/HTTP#Request_methods)
-    """
-    GET = "GET"
-    HEAD = "HEAD"
-    POST = "POST"
-    PUT = "PUT"
-    DELETE = "DELETE"
-    CONNECT = "CONNECT"
-    OPTIONS = "OPTIONS"
-    TRACE = "TRACE"
-    PATCH = "PATCH"
-
-    @classmethod
-    def check_method(cls, method):
-        valid_methods = [member.value for member in cls]
-        if method not in valid_methods:
-            # To update
-            raise ValueError(
-                f"""{method} is not a valid HTTP method."""
-                f"""It should be one of the following: {valid_methods}"""
-            )
-
-
-"""
-Some useful functions.
-"""
-
-
-def json_encode_top_level_param(params):
-    """
-    Encodes certain types of values in the `params` dictionary into JSON format.
-
-    Args:
-        params: A dictionary containing the parameters to encode.
-
-    Returns:
-        A dictionary with some parameters encoded in JSON.
-    """
-    # Create a copy of the parameters to avoid modifying the original
-    params = params.copy()
-
-    # Iterate over each key-value pair in the dictionary
-    for param, value in params.items():
-        # Check if the value is a collection type or a boolean, while ensuring it's not a string
-        if isinstance(value, (dict, list, tuple, bool)) and not isinstance(value, str):
-            # Encode the value as a JSON string with sorted keys and no unnecessary spaces
-            params[param] = json.dumps(
-                value,
-                sort_keys=True,
-                separators=(',', ':'),  # Use compact separators to minimize string size
-            )
-        else:
-            # Leave the value unchanged if it doesn't match the types eligible for JSON encoding
-            params[param] = value
-
-    return params
