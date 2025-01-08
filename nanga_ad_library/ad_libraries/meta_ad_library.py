@@ -34,8 +34,8 @@ class MetaAdLibrary:
         self.__endpoint = self.ENDPOINT
         self.__version = get_default_api_version(self.API_NAME)
 
-        # Other useful components
-        self.__target_political_ads = False
+        # Other useful components:
+        self.__target_political_ads = False  # Set to False first, it's then calculated in self.init() (lines 118-131)
 
         # Components to use in api module
         self.__method = self.METHOD
