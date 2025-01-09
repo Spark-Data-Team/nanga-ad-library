@@ -1,5 +1,3 @@
-# Pull Request Title
-
 ## Description
 <!-- Provide a concise description of the changes introduced by this PR. -->
 
