@@ -1,5 +1,8 @@
 import asyncio
 import subprocess
+import re
+
+from urllib.parse import unquote
 
 from playwright._impl._driver import compute_driver_executable, get_driver_env
 from playwright.async_api import async_playwright
@@ -315,3 +318,35 @@ class MetaAdDownloader:
         ad_payload.update({"ad_elements": ad_elements})
 
         return ad_payload
+
+    @staticmethod
+    def __extract_lp_from_meta_url(url):
+        """
+
+        Args:
+            url: The url extracted from the Meta Ad Library preview
+
+        Returns:
+            The raw landing page that was "embedded" in the Meta URL.
+                We remove utms (all elements after "?" in the landing page).
+        """
+
+        # Identify meta embedding url pattern
+        pattern = re.compile("https://l\.facebook\.com/l\.php\?u=([^&]+)&.")
+
+        # Search if the url passed as arg matchs the pattern
+        match = re.match(pattern, url)
+        if match:
+            # Extract the URL encoded
+            encoded_landing_page = match.group(1)
+
+            # Decode the landing page
+            landing_page = unquote(encoded_landing_page)
+
+        else:
+            landing_page = url
+
+        # Remove the parametric part of the url
+        landing_page = landing_page.split("?")[0]
+
+        return landing_page
