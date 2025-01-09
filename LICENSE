@@ -672,3 +672,16 @@ may consider it more useful to permit linking proprietary applications with
 the library.  If this is what you want to do, use the GNU Lesser General
 Public License instead of this License.  But first, please read
 <https://www.gnu.org/licenses/why-not-lgpl.html>.
+
+---
+
+Third-Party Software
+
+This project uses code or ideas from the following repositories:
+
+- [Facebook Business SDK for Python](https://github.com/facebook/facebook-python-business-sdk)
+ – Some code for handling API requests was inspired by this project, licensed
+  under it's own Licence:
+<https://github.com/facebook/facebook-python-business-sdk/blob/main/LICENSE>.
+
+For more details, refer to the respective licenses of these projects.
