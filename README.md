@@ -124,7 +124,7 @@ Contributions are not yet available for members outside the Nanga project.
 
 ## License
 
-This project is licensed under the GNU general public License - see the [LICENSE](LICENSE) file for details.
+This project is licensed under the GNU general public License - see the [LICENSE](https://github.com/Spark-Data-Team/nanga-ad-library/blob/main/LICENSE) file for details.
 
 ## Acknowledgements
 
