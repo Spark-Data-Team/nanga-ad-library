@@ -60,7 +60,7 @@ New advertising platforms will soon be available in the Nanga Ad Library:
 
 You can install this package directly from PyPI using `pip`:
 ```bash
-pip install nanga-ad-library
+pip install nanga-ad-library --upgrade
 ```
 
 This command will automatically download and install all required dependencies.
