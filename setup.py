@@ -8,14 +8,14 @@ readme_filename = os.path.join(this_dir, 'README.md')
 requirements_filename = os.path.join(this_dir, 'requirements.txt')
 
 PACKAGE_NAME = "nanga-ad-library"
-PACKAGE_VERSION = "1.0.0"
+PACKAGE_VERSION = "1.0.1"
 PACKAGE_AUTHOR = "Nanga"
 PACKAGE_AUTHOR_EMAIL = "hello@spark.do"
 PACKAGE_URL = "https://github.com/Spark-Data-Team/nanga-ad-library"
 PACKAGE_DOWNLOAD_URL = "https://github.com/Spark-Data-Team/nanga-ad-library/tarball/" + PACKAGE_VERSION
 PACKAGES = ["nanga_ad_library"]
 INCLUDE_MANIFEST = True  # Inclure les fichiers définis dans MANIFEST.in
-PACKAGE_LICENSE = "LICENSE.txt"
+PACKAGE_LICENSE = "GNU General Public License v3 (GPLv3) (gpl-3.0)"
 PACKAGE_DESCRIPTION = "The Nanga Ad Library developed by the ⭐️ Spark Tech team"
 
 with open(readme_filename) as f:
