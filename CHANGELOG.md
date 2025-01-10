@@ -33,10 +33,15 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 [//]: # (### Security)
 
 [//]: # (- Description of any security issues that were addressed.)
+---
+
+## [1.0.2] 2024-01-10
+### Added
+- Fix issue template folder and files
 
 ---
 
-## [1.0.1] 2024-11-11
+## [1.0.1] 2024-01-10
 ### Added
 - Small repo setups.
 

@@ -4,4 +4,4 @@
 from nanga_ad_library.sdk import NangaAdLibrary
 
 # Store package version
-__version__ = "1.0.1"
+__version__ = "1.0.2"
