@@ -33,17 +33,15 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 [//]: # (### Security)
 
 [//]: # (- Description of any security issues that were addressed.)
----
-
-## [1.0.2] 2024-01-10
-### Added
-- Fix issue template folder and files
 
 ---
 
-## [1.0.1] 2024-01-10
+## [1.0.1 to 1.0.3] 2024-01-10
 ### Added
-- Small repo setups.
+- Small repo setups [1.0.1]
+- Fix issue template folder and files [1.0.2]
+- Use find_packages in setup.py (for PyPI) [1.0.3]
+- Use relative paths in init files [1.0.3]
 
 ---
 
