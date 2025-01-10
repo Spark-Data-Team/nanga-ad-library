@@ -1,5 +1,6 @@
 name: Feature request
 description: Propose a new feature to help us improve
+title: "[Feature] Descriptive title"
 labels: ["enhancement"]
 
 body:
