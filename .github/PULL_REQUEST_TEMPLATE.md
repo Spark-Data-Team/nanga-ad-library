@@ -32,6 +32,8 @@ Closes #IssueNumber
 - [ ] My changes generate no new warnings.
 - [ ] I have added tests that prove my fix is effective or that my feature works.
 - [ ] All new and existing tests pass locally with my changes.
+- [ ] I have updated the package version in [Init](https://github.com/Spark-Data-Team/nanga-ad-library/blob/main/nanga_ad_library/__init__.py) and [Setup](https://github.com/Spark-Data-Team/nanga-ad-library/blob/main/setup.py) files.
+- [ ] I have filled the CHANGELOG file
 
 ## Additional Information
 <!-- Any additional context or information related to this PR. -->
