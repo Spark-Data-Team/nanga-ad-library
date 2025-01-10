@@ -22,7 +22,7 @@ class MetaAdLibrary:
     PLATFORM = "Meta"
     API_NAME = "Meta_GRAPH_API"
 
-    def __init__(self, payload):
+    def __init__(self, payload, verbose=False):
         """Initializes the object's internal data.
 
         Args:
@@ -34,16 +34,18 @@ class MetaAdLibrary:
         self.__endpoint = self.ENDPOINT
         self.__version = get_default_api_version(self.API_NAME)
 
-        # Other useful components:
-        self.__target_political_ads = False  # Set to False first, it's then calculated in self.init() (lines 118-131)
-
         # Components to use in api module
         self.__method = self.METHOD
         self.__final_url = f"{self.__base_url}/{self.__version}/{self.__endpoint}"
         self.__payload = payload
 
+        # Other useful components:
+        self.__target_political_ads = False  # Set to False first, it's then calculated in self.init() (lines 118-131)
+        self.__verbose = verbose or False
+
     def __del__(self):
-        print("Meta Ad Library object killed")
+        if self.__verbose:
+            print("Meta Ad Library object killed")
         self.__dict__.clear()
 
     @classmethod
@@ -103,6 +105,9 @@ class MetaAdLibrary:
         # Check kwargs has mandatory arguments
         MetaLibraryMandatoryArgs.check_arguments(**kwargs)
 
+        # Extract verbose
+        verbose = kwargs.get("verbose")
+
         # Extract fields and params
         payload = kwargs.get("payload")
         fields = payload.get("fields")
@@ -121,7 +126,7 @@ class MetaAdLibrary:
         params.update({"fields": MetaField.review_fields(fields)})
 
         # Create MetaAdLibrary object and add elements
-        library = cls(params)
+        library = cls(params, verbose)
         library.__target_political_ads = target_political_ads
         if kwargs.get("version"):
             library.update_api_version(kwargs.get("version"))
