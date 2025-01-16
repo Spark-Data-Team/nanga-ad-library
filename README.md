@@ -17,11 +17,10 @@ one place !
 
 1. [Introduction](#introduction)
 2. [Roadmap](#roadmap)
-3. [Installation](#installation)
-4. [Usage](#usage)
-5. [Contributing](#contributing)
-6. [License](#license)
-7. [Acknowledgements](#acknowledgements)
+3. [Usage](#usage)
+4. [Contributing](#contributing)
+5. [License](#license)
+6. [Acknowledgements](#acknowledgements)
 
 ## Introduction
 
@@ -60,32 +59,45 @@ New advertising platforms will soon be available in the Nanga Ad Library:
 
 You can install this package directly from PyPI using `pip`:
 ```bash
-pip install nanga-ad-library
+pip install nanga-ad-library --upgrade
+playwright install --with-deps
 ```
 
-This command will automatically download and install all required dependencies.
+These commands will automatically download and install all required dependencies.
 
 ## Usage
-
-Once the __Nanga Ad Library__ package is installed, you'll only need to set it up and use it as you wish.
 
 ### Prepare Ad Library for each platform
 
 How to set up your Ad Library app ?
 - [Meta](https://www.facebook.com/ads/library/api/)
 
-### Initiate and use the API
+### Use the package locally
+
+#### Installation
+
+You can install this package and all required dependencies directly from PyPI using `pip`:
+```bash
+pip install nanga-ad-library --upgrade
+```
+
+To be able to download ads elements, you'll have to download [playwright](https://playwright.dev/python/) browsers:
+```bash
+playwright install --with-deps
+```
+
+#### Extract data from Ad Library
 
 Try to extract some results from the Nanga Ad Library API:
 ```python
-from nanga_ad_library import NangaAdLibraryApi
+from nanga_ad_library import NangaAdLibrary
 
 # Prepare the arguments to send to initiate the API
 init_hash = {}
 
 # Prepare connection hash depending on the platform to use (here is an example for Meta):
-platform = "Meta"
-if platform == "Meta":
+platform = "meta"
+if platform == "meta":
     connection_hash = {
         "access_token": "{meta_access_token}"
     }
@@ -96,10 +108,18 @@ init_hash.update(connection_hash)
 # Prepare query hash (here is an example for Meta):
 query_hash = {
     "payload": {
+        "ad_active_status": "ACTIVE",
         "search_terms": "Facebook",
-        "ad_reached_countries": ["FR"]
-    },
-    "fields": []
+        "ad_reached_countries": ["FR"],
+        "fields": [
+            "id",
+            "page_id",
+            "ad_creation_time",
+            "ad_delivery_start_time",
+            "ad_delivery_stop_time",
+            "ad_snapshot_url"
+        ]
+    }
 }
 init_hash.update(query_hash)
 
@@ -109,14 +129,20 @@ download_hash = {
 }
 init_hash.update(download_hash)
 
-# Initiating api
-api = NangaAdLibraryApi.init(platform=platform, **init_hash)
+# Initiating library
+library = NangaAdLibrary.init(platform=platform, **init_hash)
 
 # Extract the first results from the Ad Library API
-results = api.get_results()
+results = library.get_results()
 ```
 __Note:__ please replace the {access_token} tag with valid tokens:
 - Meta Ad Library: replace'{meta_access_token}' with your [Facebook Developer access token](https://developers.facebook.com/tools/accesstoken/)
+
+### Deploy the package on the cloud
+-- More to come
+
+### Use the package in a Jupyter Notebook
+-- More to come
 
 ## Contributing
 

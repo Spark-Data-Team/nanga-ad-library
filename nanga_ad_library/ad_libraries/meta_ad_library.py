@@ -19,10 +19,10 @@ class MetaAdLibrary:
     BASE_URL = "https://graph.facebook.com"
     ENDPOINT = "ads_archive"
     METHOD = "GET"
-    PLATFORM = "Meta"
-    API_NAME = "Meta_GRAPH_API"
+    PLATFORM = "meta"
+    API_NAME = "META_GRAPH_API"
 
-    def __init__(self, payload):
+    def __init__(self, payload, verbose=False):
         """Initializes the object's internal data.
 
         Args:
@@ -34,16 +34,18 @@ class MetaAdLibrary:
         self.__endpoint = self.ENDPOINT
         self.__version = get_default_api_version(self.API_NAME)
 
-        # Other useful components:
-        self.__target_political_ads = False  # Set to False first, it's then calculated in self.init() (lines 118-131)
-
         # Components to use in api module
         self.__method = self.METHOD
         self.__final_url = f"{self.__base_url}/{self.__version}/{self.__endpoint}"
         self.__payload = payload
 
+        # Other useful components:
+        self.__target_political_ads = False  # Set to False first, it's then calculated in self.init() (lines 118-131)
+        self.__verbose = verbose or False
+
     def __del__(self):
-        print("Meta Ad Library object killed")
+        if self.__verbose:
+            print("Meta Ad Library object killed")
         self.__dict__.clear()
 
     @classmethod
@@ -84,7 +86,7 @@ class MetaAdLibrary:
         # Check that the provided dict is valid
         for param_name, param_value in payload.items():
             if param_name == "fields":
-                self.__payload[param_name] = MetaField.review_fields(param_value)
+                self.__payload[param_name] = MetaField.review_fields(param_value, self.__verbose)
             else:
                 self.__payload[param_name] = MetaParam.ensure_validity(
                     param_name,
@@ -102,6 +104,9 @@ class MetaAdLibrary:
         """
         # Check kwargs has mandatory arguments
         MetaLibraryMandatoryArgs.check_arguments(**kwargs)
+
+        # Extract verbose
+        verbose = kwargs.get("verbose")
 
         # Extract fields and params
         payload = kwargs.get("payload")
@@ -121,7 +126,7 @@ class MetaAdLibrary:
         params.update({"fields": MetaField.review_fields(fields)})
 
         # Create MetaAdLibrary object and add elements
-        library = cls(params)
+        library = cls(params, verbose)
         library.__target_political_ads = target_political_ads
         if kwargs.get("version"):
             library.update_api_version(kwargs.get("version"))
@@ -1252,14 +1257,15 @@ class MetaField(Enum):
     }
 
     @classmethod
-    def review_fields(cls, fields: list):
+    def review_fields(cls, fields: list, verbose=False):
         """
         Checks that:
             - mandatory fields are listed (else add them),
             - no unwanted fields are listed (else remove them).
 
         Args:
-            fields: The fields to query from the Meta Ad Library API
+            fields: The fields to query from the Meta Ad Library API.
+            verbose: Display the warning only if verbose is activated.
 
         Returns:
             The fields: reviewed and updated (if needed)
@@ -1288,7 +1294,7 @@ class MetaField(Enum):
                 warning = f"""{field} is not an available field for Meta Ad Library API."""
 
             # Display a warning if needed
-            if warning:
+            if warning and verbose:
                 warnings.warn(warning)
 
         return reviewed_fields

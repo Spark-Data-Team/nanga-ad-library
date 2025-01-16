@@ -80,34 +80,7 @@ class MetaAdDownloader:
         # Initiate a playwright downloader
         ad_downloader = cls(kwargs.get("verbose"))
 
-        # Install chromium browser with all dependencies
-        ad_downloader.__install_chromium_browser_async(with_deps=True)
-
         return ad_downloader
-
-    def __install_chromium_browser_async(self, with_deps=True):
-        """ [Hidden method]
-        Install Playwright chromium browser (async)
-
-        Args:
-            with_deps (bool, optional): Whether deps have to be installed too.
-        """
-
-        # Install cmd arguments
-        driver_executable, driver_cli = compute_driver_executable()
-        args = [driver_executable, driver_cli, "install", "chromium", "--async"]
-
-        # Update args if we need to install deps
-        if with_deps:
-            args.append("--with-deps")
-
-        # Launch install cmd
-        proc = subprocess.run(args, env=get_driver_env(), capture_output=True, text=True, check=False)  # noqa: S603
-        if self.__verbose:
-            print(
-                "Playwright chromium browser successfully installed." if proc
-                else "Failed to install Playwright chromium browser."
-            )
 
     async def download_from_new_batch(self, ad_library_batch):
         """
@@ -122,7 +95,7 @@ class MetaAdDownloader:
 
         async with async_playwright() as p:
             # Initiate playwright browser and use it for the whole batch
-            browser = await p.chromium.launch()
+            browser = await p.chromium.launch(headless=True)
 
             # Download ad elements (parallel calls)
             updated_batch = await asyncio.gather(
