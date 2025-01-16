@@ -86,7 +86,7 @@ class NangaAdLibrary:
             A NangaAdLibrary object, ready to extract valuable data.
         """
         # Initiate instances depending on the chosen platform
-        if platform == "Meta":
+        if platform == "meta":
             # Initiate Meta Graph Session
             sdk_session = MetaGraphAPISession.init(**kwargs)
 
