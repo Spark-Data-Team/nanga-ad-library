@@ -23,8 +23,8 @@ class ObjectParser:
     def __getitem__(self, key):
         return self.__dict__[key]
 
-    def get(self, key):
-        return self.__dict__.get(key)
+    def get(self, key, default=None):
+        return self.__dict__.get(key, default)
 
     def update(self, new_dict):
         self.__dict__.update(new_dict)
