@@ -86,7 +86,7 @@ class MetaAdLibrary:
         # Check that the provided dict is valid
         for param_name, param_value in payload.items():
             if param_name == "fields":
-                self.__payload[param_name] = MetaField.review_fields(param_value)
+                self.__payload[param_name] = MetaField.review_fields(param_value, self.__verbose)
             else:
                 self.__payload[param_name] = MetaParam.ensure_validity(
                     param_name,
@@ -1257,14 +1257,15 @@ class MetaField(Enum):
     }
 
     @classmethod
-    def review_fields(cls, fields: list):
+    def review_fields(cls, fields: list, verbose=False):
         """
         Checks that:
             - mandatory fields are listed (else add them),
             - no unwanted fields are listed (else remove them).
 
         Args:
-            fields: The fields to query from the Meta Ad Library API
+            fields: The fields to query from the Meta Ad Library API.
+            verbose: Display the warning only if verbose is activated.
 
         Returns:
             The fields: reviewed and updated (if needed)
@@ -1293,7 +1294,7 @@ class MetaField(Enum):
                 warning = f"""{field} is not an available field for Meta Ad Library API."""
 
             # Display a warning if needed
-            if warning:
+            if warning and verbose:
                 warnings.warn(warning)
 
         return reviewed_fields
