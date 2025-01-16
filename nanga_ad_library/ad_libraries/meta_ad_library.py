@@ -19,8 +19,8 @@ class MetaAdLibrary:
     BASE_URL = "https://graph.facebook.com"
     ENDPOINT = "ads_archive"
     METHOD = "GET"
-    PLATFORM = "Meta"
-    API_NAME = "Meta_GRAPH_API"
+    PLATFORM = "meta"
+    API_NAME = "META_GRAPH_API"
 
     def __init__(self, payload, verbose=False):
         """Initializes the object's internal data.
