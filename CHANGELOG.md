@@ -36,7 +36,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ---
 
-## [1.0.5] 2025-01-27
+## [1.0.5 to 1.0.6] 2025-01-27
 ### Added
 - Add download date_range:
   ad elements will be scraped only if ad creation_date is between download_start_date and download_end_date.

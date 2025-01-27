@@ -164,7 +164,7 @@ class MetaAdDownloader:
         # Check that creation_date is between __download_start_date et __download_end_date
         creation_date = datetime.strptime(ad_payload.get(self.CREATION_DATE_FIELD), "%Y-%m-%d")
         if not (self.__download_start_date <= creation_date <= self.__download_end_date):
-            ad_payload.update(ad_elements)
+            ad_payload.update({"ad_elements": ad_elements})
             return ad_payload
 
         # Extract preview url from ad payload
