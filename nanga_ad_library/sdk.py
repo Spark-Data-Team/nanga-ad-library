@@ -75,7 +75,7 @@ class NangaAdLibrary:
     @classmethod
     def init(cls, platform, **kwargs):
         """
-
+        Init NangaAdLibrary object and its session, ad_library and ad_downloader
 
         Args:
             platform: The platform of the Ad Library you want to
