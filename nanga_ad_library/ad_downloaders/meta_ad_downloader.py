@@ -1,10 +1,10 @@
 import asyncio
-import subprocess
 import re
+import warnings
 
 from urllib.parse import unquote
+from datetime import datetime
 
-from playwright._impl._driver import compute_driver_executable, get_driver_env
 from playwright.async_api import async_playwright
 
 """
@@ -54,6 +54,9 @@ class MetaRequestInterceptor:
     def get_images(self):
         return self.__intercepted_images
 
+    def is_empty(self):
+        return bool(self.__intercepted_images or self.__intercepted_videos)
+
 
 class MetaAdDownloader:
     """
@@ -62,11 +65,39 @@ class MetaAdDownloader:
       - "*" tagged elements are retrieved for each creative visual (1 for statics, several for carousels)
     """
 
-    # Store the field used to store the Meta Ad Library preview url (specific to Meta)
+    # Store the fields used to store (1) the Meta Ad Library preview url and (2) the creation date (specific to Meta)
     PREVIEW_FIELD = "ad_snapshot_url"
+    CREATION_DATE_FIELD = "ad_creation_time"
 
-    def __init__(self, verbose=False):
+    def __init__(self, start_date=None, end_date=None, verbose=False):
+        """
+
+        Args:
+            start_date: If not empty: download only ads created after this date,
+            end_date: If not empty: download only ads created before this date,
+            verbose: Whether to display intermediate logs.
+        """
+
+        # Verbose
         self.__verbose = verbose or False
+
+        # Store download start date
+        try:
+            self.__download_start_date = datetime.strptime(start_date, "%Y-%m-%d")
+        except:
+            self.__download_start_date = datetime.fromtimestamp(0)
+            # Raise a warning if the start_date was given but parsing failed
+            if start_date and self.__verbose:
+                warnings.warn("Provided start date should match the following format '%Y-%m-%d'.")
+
+        # Store download end date
+        try:
+            self.__download_end_date = datetime.strptime(end_date, "%Y-%m-%d")
+        except:
+            self.__download_end_date = datetime.today()
+            # Raise a warning if the start_date was given but parsing failed
+            if start_date and self.__verbose:
+                warnings.warn("Provided end date should match the following format '%Y-%m-%d'.")
 
     @classmethod
     def init(cls, **kwargs):
@@ -78,7 +109,11 @@ class MetaAdDownloader:
         """
 
         # Initiate a playwright downloader
-        ad_downloader = cls(kwargs.get("verbose"))
+        ad_downloader = cls(
+            start_date=kwargs.get("download_start_date"),
+            end_date=kwargs.get("download_end_date"),
+            verbose=kwargs.get("verbose")
+        )
 
         return ad_downloader
 
@@ -119,15 +154,21 @@ class MetaAdDownloader:
             A dict with the downloaded ad elements.
         """
 
-        # Extract preview url from ad payload
-        preview = ad_payload.get(self.PREVIEW_FIELD)
-
         # Prepare payload to return
         ad_elements = {
             "body": None,
             "type": None,
             "carousel": []
         }
+
+        # Check that creation_date is between __download_start_date et __download_end_date
+        creation_date = datetime.strptime(ad_payload.get(self.CREATION_DATE_FIELD), "%Y-%m-%d")
+        if not (self.__download_start_date <= creation_date <= self.__download_end_date):
+            ad_payload.update(ad_elements)
+            return ad_payload
+
+        # Extract preview url from ad payload
+        preview = ad_payload.get(self.PREVIEW_FIELD)
 
         # Initiate request interceptor
         interceptor = MetaRequestInterceptor(self.__verbose)
@@ -264,7 +305,8 @@ class MetaAdDownloader:
             # Landing page
             landing_page_locator = await page.locator(links_path).all()
             if landing_page_locator:
-                creative["landing_page"] = await landing_page_locator[0].get_attribute("href")
+                meta_landing_page = await landing_page_locator[0].get_attribute("href")
+                creative["landing_page"] = self.__extract_lp_from_meta_url(meta_landing_page)
             # Call to action
             cta_locator = await page.locator(f"""{captions_path}/div[2]/div/div/span/div/div/div""").all()
             if cta_locator:
@@ -286,6 +328,10 @@ class MetaAdDownloader:
 
         # Close used browser page
         await page.close()
+
+        # Check that scraping did not fail
+        if ad_elements.get("type") == "status" and not interceptor.is_empty():
+            raise ValueError(f"Failed to scrap Meta Ad Library preview: '{preview}'")
 
         # Update payload
         ad_payload.update({"ad_elements": ad_elements})

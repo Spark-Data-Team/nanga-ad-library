@@ -36,13 +36,24 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ---
 
-## [1.0.4] 2024-01-16
+## [1.0.5] 2025-01-27
+### Added
+- Add download date_range:
+  ad elements will be scraped only if ad creation_date is between download_start_date and download_end_date.
+- Refactor landing page url:
+  extract main url from Meta embedded url and remove url tags/utms.
+- Check that the scraping worked:
+  ad elements type should not be 'status' if images or videos are intercepted.
+
+---
+
+## [1.0.4] 2025-01-16
 ### Added
 - Remove playwright browsers auto-install
 
 ---
 
-## [1.0.1 to 1.0.3] 2024-01-10
+## [1.0.1 to 1.0.3] 2025-01-10
 ### Added
 - Small repo setups [1.0.1]
 - Fix issue template folder and files [1.0.2]
