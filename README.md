@@ -123,9 +123,13 @@ query_hash = {
 }
 init_hash.update(query_hash)
 
-# Choose if ads elements will be downloaded (Title, Body, Description, Image or Video, Call to action)
+# Choose if ads elements will be downloaded (Title, Body, Description, Image or Video, Call to action).
+# You can also provide download_start_date and download_end_date to retrieve ad_elements only for ads created 
+# during this date range (both fields are optional).
 download_hash = {
-    "download_ads": True
+    "download_ads": True,
+    "download_start_date": "2025-01-01",
+    "download_end_date": "2025-01-25"
 }
 init_hash.update(download_hash)
 
