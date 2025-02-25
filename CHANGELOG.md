@@ -36,6 +36,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ---
 
+## [1.0.7] 2025-02-25
+### Added
+- Use delivery_start_date to check if the ad has to be downloaded
+
+---
+
 ## [1.0.5 to 1.0.6] 2025-01-27
 ### Added
 - Add download date_range:

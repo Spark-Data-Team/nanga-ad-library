@@ -1148,12 +1148,12 @@ class MetaField(Enum):
     }
     AD_DELIVERY_START_TIME = {
         "name": "ad_delivery_start_time",
-        "mandatory": False,
+        "mandatory": True,
         "warning": None
     }
     AD_DELIVERY_STOP_TIME = {
         "name": "ad_delivery_stop_time",
-        "mandatory": False,
+        "mandatory": True,
         "warning": None
     }
     AD_SNAPSHOT_URL = {
