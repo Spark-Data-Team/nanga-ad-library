@@ -67,7 +67,7 @@ class MetaAdDownloader:
 
     # Store the fields used to store (1) the Meta Ad Library preview url and (2) the creation date (specific to Meta)
     PREVIEW_FIELD = "ad_snapshot_url"
-    CREATION_DATE_FIELD = "ad_creation_time"
+    DELIVERY_START_DATE_FIELD = "ad_delivery_start_time"
 
     def __init__(self, start_date=None, end_date=None, verbose=False):
         """
@@ -161,9 +161,9 @@ class MetaAdDownloader:
             "carousel": []
         }
 
-        # Check that creation_date is between __download_start_date et __download_end_date
-        creation_date = datetime.strptime(ad_payload.get(self.CREATION_DATE_FIELD), "%Y-%m-%d")
-        if not (self.__download_start_date <= creation_date <= self.__download_end_date):
+        # Check that delivery_start_date is between __download_start_date et __download_end_date
+        delivery_start_date = datetime.strptime(ad_payload.get(self.DELIVERY_START_DATE_FIELD), "%Y-%m-%d")
+        if not (self.__download_start_date <= delivery_start_date <= self.__download_end_date):
             ad_payload.update({"ad_elements": ad_elements})
             return ad_payload
 
