@@ -100,37 +100,6 @@ class MetaAdDownloader:
             if start_date and self.__verbose:
                 warnings.warn("Provided end date should match the following format '%Y-%m-%d'.")
 
-        # Launch playwright and open a unique browser
-        self.browser = None
-        self.playwright = None
-
-    def __del__(self):
-        if self.__verbose:
-            print("Meta Ad Downloader object killed")
-        # Call close function in the running loop if any
-        loop = asyncio.get_event_loop()
-        if loop.is_running():
-            asyncio.ensure_future(self.close())
-        else:
-            loop.run_until_complete(self.close())
-
-    async def launch_browser(self):
-        """
-        Launch playwright and initiate a browser if not done yet
-        """
-        if self.playwright is None:
-            self.playwright = await async_playwright().start()
-            self.browser = await self.playwright.chromium.launch(headless=True)
-
-    async def close(self):
-        """
-        Clean close of the Ad Downloader object
-        """
-        if self.browser:
-            await self.browser.close()
-        if self.playwright:
-            await self.playwright.stop()
-
     @classmethod
     def init(cls, **kwargs):
         """
@@ -159,29 +128,35 @@ class MetaAdDownloader:
         Returns:
              The updated batch with new key "ad_elements".
         """
-        # Launch browser if not yet available
-        await self.launch_browser()
 
-        # Download ad_elements using smaller batches
-        updated_batches = []
-        while ad_library_batch:
-            ad_downloader_batch = ad_library_batch[:self.MAX_BATCH_SIZE]
-            ad_library_batch = ad_library_batch[self.MAX_BATCH_SIZE:]
-
-            # Initiate playwright context for this batch
-            context = await self.browser.new_context()
+        # Initiate playwright context for this batch
+        async with async_playwright() as p:
+            # Initiate playwright browser and use it for the whole batch
+            browser = await p.chromium.launch(headless=True)
 
             try:
-                # Download ad elements (parallel calls)
-                updated_batch = await asyncio.gather(
-                    *(self.__download_ad_elements(context, ad_payload) for ad_payload in ad_downloader_batch)
-                )
+                # Download ad_elements using smaller batches
+                updated_batches = []
+                while ad_library_batch:
+                    ad_downloader_batch = ad_library_batch[:self.MAX_BATCH_SIZE]
+                    ad_library_batch = ad_library_batch[self.MAX_BATCH_SIZE:]
 
-                updated_batches.extend(updated_batch)
+                    # Initiate new context
+                    context = await browser.new_context()
+
+                    try:
+                        # Download ad elements (parallel calls)
+                        updated_batch = await asyncio.gather(
+                            *(self.__download_ad_elements(context, ad_payload) for ad_payload in ad_downloader_batch)
+                        )
+
+                        updated_batches.extend(updated_batch)
+
+                    finally:
+                        await context.close()
 
             finally:
-                # Close browser and context
-                await context.close()
+                await browser.close()
 
         return updated_batches
 
@@ -372,6 +347,9 @@ class MetaAdDownloader:
 
                 # Check that scraping did not fail
                 if ad_elements.get("type") == "status" and not interceptor.is_empty():
+                    print(f"Intercepted videos for page '{preview}': {interceptor.get_videos()}")
+                    print(f"Intercepted images for page '{preview}': {interceptor.get_images()}")
+                    print(f"Page '{preview}' elements: {await page.content()}")
                     raise ValueError(f"Failed to scrap Meta Ad Library preview: '{preview}'")
 
         except PlaywrightTimeoutError:
