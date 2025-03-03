@@ -349,7 +349,7 @@ class MetaAdDownloader:
                 if ad_elements.get("type") == "status" and not interceptor.is_empty():
                     print(f"Intercepted videos for page '{preview}': {interceptor.get_videos()}")
                     print(f"Intercepted images for page '{preview}': {interceptor.get_images()}")
-                    print(f"Page '{preview}' elements: {page.content()}")
+                    print(f"Page '{preview}' elements: {await page.content()}")
                     raise ValueError(f"Failed to scrap Meta Ad Library preview: '{preview}'")
 
         except PlaywrightTimeoutError:
