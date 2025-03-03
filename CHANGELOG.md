@@ -36,6 +36,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ---
 
+## [1.0.8] 2025-03-03
+### Added
+- Clean Playwright use to avoid having process killed with errors (cf Issue)[https://github.com/Spark-Data-Team/nanga-ad-library/issues/17]
+
+---
+
 ## [1.0.7] 2025-02-25
 ### Added
 - Use delivery_start_date to check if the ad has to be downloaded
