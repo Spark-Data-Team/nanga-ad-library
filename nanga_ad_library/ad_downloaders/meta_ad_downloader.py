@@ -1,11 +1,13 @@
 import asyncio
-import re
 import warnings
+import re
 
 from urllib.parse import unquote
 from datetime import datetime
 
 from playwright.async_api import async_playwright, TimeoutError as PlaywrightTimeoutError, Error as PlaywrightError
+
+from nanga_ad_library.utils import *
 
 """
 Define MetaAdDownloader class to retrieve ad elements using Playwright.
@@ -43,6 +45,12 @@ class MetaRequestInterceptor:
             # Store image
             self.__intercepted_images.append(request.url)
 
+        # Intercept requests redirecting to checkpoints or login page
+        elif "login" in request.url or "checkpoint" in request.url:
+            await route.abort()
+            # if self.__verbose:
+            print(f"Checkpoint request blocked: {request.url}")
+
         else:
             await route.continue_()
             if self.__verbose:
@@ -65,9 +73,11 @@ class MetaAdDownloader:
       - "*" tagged elements are retrieved for each creative visual (1 for statics, several for carousels)
     """
 
-    # Store the fields used to store (1) the Meta Ad Library preview url and (2) the creation date (specific to Meta)
+    # Store the fields used to store (1) the Meta Ad Library preview url and (2) the ad delivery start date
     PREVIEW_FIELD = "ad_snapshot_url"
     DELIVERY_START_DATE_FIELD = "ad_delivery_start_time"
+
+    # Store the maximum number of pages that can be open simultaneously in a browser's context
     MAX_BATCH_SIZE = 5
 
     def __init__(self, start_date=None, end_date=None, verbose=False):
@@ -141,8 +151,9 @@ class MetaAdDownloader:
                     ad_downloader_batch = ad_library_batch[:self.MAX_BATCH_SIZE]
                     ad_library_batch = ad_library_batch[self.MAX_BATCH_SIZE:]
 
-                    # Initiate new context
-                    context = await browser.new_context()
+                    # Initiate new context with a randomly generated User Agent
+                    ua_generator = UserAgentGenerator()
+                    context = await browser.new_context(user_agent=ua_generator.user_agent)
 
                     try:
                         # Download ad elements (parallel calls)
@@ -347,10 +358,10 @@ class MetaAdDownloader:
 
                 # Check that scraping did not fail
                 if ad_elements.get("type") == "status" and not interceptor.is_empty():
-                    print(f"Intercepted videos for page '{preview}': {interceptor.get_videos()}")
-                    print(f"Intercepted images for page '{preview}': {interceptor.get_images()}")
-                    print(f"Page '{preview}' elements: {await page.content()}")
                     raise ValueError(f"Failed to scrap Meta Ad Library preview: '{preview}'")
+
+            # Update payload
+            ad_payload.update({"ad_elements": ad_elements})
 
         except PlaywrightTimeoutError:
             print(f"[ERROR] Timeout while loading page '{preview}'")
@@ -360,9 +371,6 @@ class MetaAdDownloader:
             print(f"[ERROR] Scrapping page '{preview}' failed with error: {e}")
         finally:
             await page.close()
-
-        # Update payload
-        ad_payload.update({"ad_elements": ad_elements})
 
         return ad_payload
 
@@ -384,3 +392,4 @@ class MetaAdDownloader:
         landing_page = unquote(match.group(1)).split("?")[0] if match else url
 
         return landing_page
+
