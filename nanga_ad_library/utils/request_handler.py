@@ -102,15 +102,20 @@ class HttpMethod(Enum):
 class UserAgent:
 
     """
-        Generates a realistic User Agent that can be later used in web requests.
+    Generates a realistic User Agent that can be later used in web requests.
     """
 
     USER_AGENTS_FILENAME = "user_agents.txt"
 
     def __init__(self):
-        """ Chooses a user agent from a list stored in user_agents.txt"""
+        """Nothing to do at first"""
 
     def pick(self):
+        """
+        Pick a user agent from a list stored in user_agents.txt
+            (file source is https://gist.github.com/pzb/b4b6f57144aea7827ae4)
+        """
+
         # Find file path
         repo_dir = os.path.dirname(os.path.abspath(__file__))
         filepath = os.path.join(repo_dir, self.USER_AGENTS_FILENAME)
