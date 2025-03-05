@@ -152,8 +152,8 @@ class MetaAdDownloader:
                     ad_library_batch = ad_library_batch[self.MAX_BATCH_SIZE:]
 
                     # Initiate new context with a randomly generated User Agent
-                    ua_generator = UserAgentGenerator()
-                    context = await browser.new_context(user_agent=ua_generator.user_agent)
+                    user_agent = UserAgent().pick()
+                    context = await browser.new_context(user_agent=user_agent)
 
                     try:
                         # Download ad elements (parallel calls)
