@@ -1,3 +1,4 @@
+import os
 import json
 import random
 
@@ -98,79 +99,34 @@ class HttpMethod(Enum):
             )
 
 
-class UserAgentGenerator:
+class UserAgent:
 
     """
-        Generates a realistic User Agent that can be later used in web requests.
+    Generates a realistic User Agent that can be later used in web requests.
     """
 
-    # Store hardcoded list of elements to use in User Agent random generation
-    OS_COMPATIBILITIES = {
-        'Windows': ['Chrome', 'Edge', 'Opera', 'Firefox'],
-        'MacOS': ['Chrome', 'Safari', 'Opera', 'Firefox'],
-        'Linux': ['Chrome', 'Opera', 'Firefox'],
-        'Android': ['Chrome', 'Opera', 'Firefox'],
-        'iOS': ['Safari'],
-    }
-    USER_AGENT_TEMPLATES = {
-        'Chrome': {
-            'Windows': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/{version} Safari/537.36',
-            'MacOS': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/{version} Safari/537.36',
-            'Linux': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/{version} Safari/537.36',
-            'Android': 'Mozilla/5.0 (Linux; Android {version}; Nexus 5 Build/{build}) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/{version} Mobile Safari/537.36',
-        },
-        'Edge': {
-            'Windows': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/{version} Edge/{edge_version} Safari/537.36',
-        },
-        'Opera': {
-            'Windows': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/{version} Opera/{opera_version} Safari/537.36',
-            'Linux': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/{version} Opera/{opera_version} Safari/537.36',
-        },
-        'Firefox': {
-            'Windows': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:{version}) Gecko/{gecko_version} Firefox/{version}',
-            'MacOS': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7; rv:{version}) Gecko/{gecko_version} Firefox/{version}',
-            'Linux': 'Mozilla/5.0 (X11; Linux x86_64; rv:{version}) Gecko/{gecko_version} Firefox/{version}',
-            'Android': 'Mozilla/5.0 (Android {version}; Mobile; rv:{version}) Gecko/{gecko_version} Firefox/{version}',
-        },
-        'Safari': {
-            'MacOS': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Version/{version} Safari/537.36',
-            'iOS': 'Mozilla/5.0 (iPhone; CPU iPhone OS {version} like Mac OS X) AppleWebKit/537.36 (KHTML, like Gecko) Version/{version} Safari/537.36',
-        },
-    }
-    BROWSER_VERSIONS = {
-        'Chrome': ['90.0.4430.93', '91.0.4472.124', '92.0.4515.131', '93.0.4577.82'],
-        'Edge': ['90.0.818.62', '91.0.864.48', '92.0.902.67', '93.0.961.52'],
-        'Opera': ['75.0.3969.243', '76.0.4017.186', '77.0.4054.273', '78.0.4093.98'],
-        'Firefox': ['88.0', '89.0', '90.0', '91.0'],
-        'Safari': ['14.0', '14.1', '15.0', '15.1'],
-    }
+    USER_AGENTS_FILENAME = "user_agents.txt"
 
     def __init__(self):
-        """
-        Generates a "unique" User Agent object by randomly combining available os, browsers and engines.
-        """
-        # Randomly choose an OS and compatible browser and version
-        os = random.choice(list(self.OS_COMPATIBILITIES.keys()))
-        browser = random.choice(self.OS_COMPATIBILITIES[os])
-        version = random.choice(self.BROWSER_VERSIONS[browser])
+        """Nothing to do at first"""
 
-        # Select a User Agent template compatible with the chosen OS
-        template = self.USER_AGENT_TEMPLATES[browser].get(os)
+    def pick(self):
+        """
+        Pick a user agent from a list stored in user_agents.txt
+            (file source is https://gist.github.com/pzb/b4b6f57144aea7827ae4)
+        """
 
-        # Generate final User Agent
-        if browser == 'Edge':
-            edge_version = version.split('.')[0]
-            self.user_agent = template.format(version=version, edge_version=edge_version)
-        elif browser == 'Opera':
-            opera_version = version.split('.')[0]
-            self.user_agent = template.format(version=version, opera_version=opera_version)
-        elif browser == 'Firefox':
-            gecko_version = version.split('.')[0]
-            self.user_agent = template.format(version=version, gecko_version=gecko_version)
-        elif browser == 'Safari':
-            self.user_agent = template.format(version=version)
-        else:
-            self.user_agent = template.format(version=version)
+        # Find file path
+        repo_dir = os.path.dirname(os.path.abspath(__file__))
+        filepath = os.path.join(repo_dir, self.USER_AGENTS_FILENAME)
+
+        # Open file and pick a random user-agent
+        try:
+            with open(filepath, "r", encoding="utf-8") as file:
+                user_agents = [line.strip() for line in file if line.strip()]
+            return random.choice(user_agents) if user_agents else None
+        except:
+            return None
 
 
 # ~~~~  Other useful functions  ~~~~
