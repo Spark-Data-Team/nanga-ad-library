@@ -36,11 +36,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ---
 
-## [1.0.8 to 1.0.10] 2025-03-04
+## [1.0.8 to 1.0.11] 2025-03-03 to 2025-03-03 
 ### Added
 - Clean Playwright use to avoid having process killed with errors (cf Issue)[https://github.com/Spark-Data-Team/nanga-ad-library/issues/17]
 - Try to block Meta redirections to Login pages
-- Pass randomly generated User Agents (class UserAgentGenerator in utils)
+- Pass randomly picked User-Agent to Playwright context (class "UserAgent" + file "user_agents.txt" in utils)
 
 ---
 
