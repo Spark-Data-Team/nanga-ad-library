@@ -245,7 +245,7 @@ class MetaAdDownloader:
                         captions_path = links_path + "/div[2]"
                         creative["image"] = await image_locator[0].get_attribute("src")
                     # Video
-                    video_locator = await page.locator(f"""{creative_path}/div[1]/div/div/div/div/video""").all()
+                    video_locator = await page.locator(f"""{creative_path}/div[1]//video""").all()
                     if video_locator:
                         links_path = creative_path + "/div[2]/a"
                         captions_path = links_path + "/div"
@@ -313,7 +313,7 @@ class MetaAdDownloader:
                     captions_path = None
                     creative["image"] = await image_locator_2[0].get_attribute("src")
                 # Video
-                video_locator = await page.locator(f"""{creative_path}/div[2]/div/div/div/div/video""").all()
+                video_locator = await page.locator(f"""{creative_path}/div[2]//video""").all()
                 if video_locator:
                     ad_elements["type"] = "video"
                     links_path = creative_path + "/div[3]/a"
