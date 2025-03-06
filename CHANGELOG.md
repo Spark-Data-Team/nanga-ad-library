@@ -36,10 +36,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ---
 
-## [1.0.12] 2025-03-06
+## [1.0.12 to 1.0.13] 2025-03-06
 ### Added
 - Add new scraping elements:
-  for images without bottom section (title + CTA), the locators are different.
+  - for images without bottom section (title + CTA), the locators are different
+  - videos location may vary: use "//video" to detect any video child section 
 
 ---
 
