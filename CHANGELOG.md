@@ -36,7 +36,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ---
 
-## [1.0.8 to 1.0.11] 2025-03-03 to 2025-03-03 
+## [1.0.12] 2025-03-06
+### Added
+- Add new scraping elements:
+  for images without bottom section (title + CTA), the locators are different.
+
+---
+
+## [1.0.8 to 1.0.11] 2025-03-03 to 2025-03-05
 ### Added
 - Clean Playwright use to avoid having process killed with errors (cf Issue)[https://github.com/Spark-Data-Team/nanga-ad-library/issues/17]
 - Try to block Meta redirections to Login pages
