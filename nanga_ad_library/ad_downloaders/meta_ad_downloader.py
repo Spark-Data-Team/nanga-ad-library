@@ -45,12 +45,6 @@ class MetaRequestInterceptor:
             # Store image
             self.__intercepted_images.append(request.url)
 
-        # Intercept requests redirecting to checkpoints or login page
-        elif "login" in request.url or "checkpoint" in request.url:
-            await route.abort()
-            # if self.__verbose:
-            print(f"Checkpoint request blocked: {request.url}")
-
         else:
             await route.continue_()
             if self.__verbose:
@@ -255,8 +249,8 @@ class MetaAdDownloader:
                     if video_locator:
                         links_path = creative_path + "/div[2]/a"
                         captions_path = links_path + "/div"
-                        creative["image"] = await image_locator[0].get_attribute("playsinline poster")
-                        creative["video"] = await image_locator[0].get_attribute("src")
+                        creative["image"] = await video_locator[0].get_attribute("playsinline poster")
+                        creative["video"] = await video_locator[0].get_attribute("src")
                     # Undetected video or empty
                     if not (image_locator or video_locator):
                         if blocked_videos:
@@ -304,23 +298,30 @@ class MetaAdDownloader:
                     "description": None
                 }
                 creative_path = f"""//*[@id="content"]/div/div/div/div/div/div/div[2]"""
-                # Image
-                image_locator = await page.locator(f"""{creative_path}/a/div[1]/img""").all()
-                if image_locator:
+                # Image (with title + links)
+                image_locator_1 = await page.locator(f"""{creative_path}/a/div[1]/img""").all()
+                if image_locator_1:
                     ad_elements["type"] = "image"
                     links_path = creative_path + "/a"
                     captions_path = links_path + "/div[2]"
-                    creative["image"] = await image_locator[0].get_attribute("src")
+                    creative["image"] = await image_locator_1[0].get_attribute("src")
+                # Image (without title + links)
+                image_locator_2 = await page.locator(f"""{creative_path}/div[2]/img""").all()
+                if image_locator_2:
+                    ad_elements["type"] = "image"
+                    links_path = None
+                    captions_path = None
+                    creative["image"] = await image_locator_2[0].get_attribute("src")
                 # Video
                 video_locator = await page.locator(f"""{creative_path}/div[2]/div/div/div/div/video""").all()
                 if video_locator:
                     ad_elements["type"] = "video"
                     links_path = creative_path + "/div[3]/a"
                     captions_path = links_path + "/div"
-                    creative["image"] = await image_locator[0].get_attribute("playsinline poster")
-                    creative["video"] = await image_locator[0].get_attribute("src")
+                    creative["image"] = await video_locator[0].get_attribute("playsinline poster")
+                    creative["video"] = await video_locator[0].get_attribute("src")
                 # Undetected video or empty
-                if not (image_locator or video_locator):
+                if not (image_locator_1 or image_locator_2 or video_locator):
                     if blocked_videos:
                         ad_elements["type"] = "video"
                         links_path = creative_path + "/div[3]/a"
@@ -332,36 +333,38 @@ class MetaAdDownloader:
                         ad_elements["type"] = "status"
                         links_path = creative_path + "/a"
                         captions_path = links_path + "/div[2]"
-                # Landing page
-                landing_page_locator = await page.locator(links_path).all()
-                if landing_page_locator:
-                    meta_landing_page = await landing_page_locator[0].get_attribute("href")
-                    creative["landing_page"] = self.__extract_lp_from_meta_url(meta_landing_page)
-                # Call to action
-                cta_locator = await page.locator(f"""{captions_path}/div[2]/div/div/span/div/div/div""").all()
-                if cta_locator:
-                    creative["cta"] = await cta_locator[0].inner_html()
-                # Caption
-                caption_locator = await page.locator(f"""{captions_path}/div[1]/div[1]/div/div""").all()
-                if caption_locator:
-                    creative["caption"] = await caption_locator[0].inner_html()
-                # Title
-                title_locator = await page.locator(f"""{captions_path}/div[1]/div[2]/div/div""").all()
-                if title_locator:
-                    creative["title"] = await title_locator[0].inner_html()
-                # Description
-                description_locator = await page.locator(f"""{captions_path}/div[1]/div[3]/div/div""").all()
-                if description_locator:
-                    creative["description"] = await description_locator[0].inner_html()
+                if links_path:
+                    # Landing page
+                    landing_page_locator = await page.locator(links_path).all()
+                    if landing_page_locator:
+                        meta_landing_page = await landing_page_locator[0].get_attribute("href")
+                        creative["landing_page"] = self.__extract_lp_from_meta_url(meta_landing_page)
+                if captions_path:
+                    # Call to action
+                    cta_locator = await page.locator(f"""{captions_path}/div[2]/div/div/span/div/div/div""").all()
+                    if cta_locator:
+                        creative["cta"] = await cta_locator[0].inner_html()
+                    # Caption
+                    caption_locator = await page.locator(f"""{captions_path}/div[1]/div[1]/div/div""").all()
+                    if caption_locator:
+                        creative["caption"] = await caption_locator[0].inner_html()
+                    # Title
+                    title_locator = await page.locator(f"""{captions_path}/div[1]/div[2]/div/div""").all()
+                    if title_locator:
+                        creative["title"] = await title_locator[0].inner_html()
+                    # Description
+                    description_locator = await page.locator(f"""{captions_path}/div[1]/div[3]/div/div""").all()
+                    if description_locator:
+                        creative["description"] = await description_locator[0].inner_html()
                 # Add to list
                 ad_elements["carousel"].append(creative)
 
-                # Check that scraping did not fail
-                if ad_elements.get("type") == "status" and not interceptor.is_empty():
-                    raise ValueError(f"Failed to scrap Meta Ad Library preview: '{preview}'")
-
             # Update payload
             ad_payload.update({"ad_elements": ad_elements})
+
+            # Check that scraping did not fail
+            if ad_elements.get("type") == "status" and not interceptor.is_empty():
+                raise ValueError(f"Failed to scrap visuals from Meta Ad Library preview: '{preview}'")
 
         except PlaywrightTimeoutError:
             print(f"[ERROR] Timeout while loading page '{preview}'")
