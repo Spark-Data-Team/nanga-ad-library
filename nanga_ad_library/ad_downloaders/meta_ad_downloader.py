@@ -1,5 +1,6 @@
 import asyncio
 import warnings
+import time
 import re
 
 from urllib.parse import unquote
@@ -31,7 +32,7 @@ class MetaRequestInterceptor:
     async def intercept(self, route, request):
         # Intercept video requests
         if "video" in request.url:
-            await route.continue_()
+            await route.abort()
             if self.__verbose:
                 print(f"Video request blocked: {request.url}")
             # Store video
@@ -70,6 +71,9 @@ class MetaAdDownloader:
     # Store the fields used to store (1) the Meta Ad Library preview url and (2) the ad delivery start date
     PREVIEW_FIELD = "ad_snapshot_url"
     DELIVERY_START_DATE_FIELD = "ad_delivery_start_time"
+
+    # Store the Meta public ad preview base url
+    PUBLIC_PREVIEW_URL = "https://www.facebook.com/ads/library/"
 
     # Store the maximum number of pages that can be open simultaneously in a browser's context
     MAX_BATCH_SIZE = 5
@@ -155,7 +159,7 @@ class MetaAdDownloader:
                     try:
                         # Download ad elements (parallel calls)
                         updated_batch = await asyncio.gather(
-                            *(self.__download_ad_elements(context, ad_payload) for ad_payload in ad_downloader_batch)
+                            *(self.__download_ad_elements_from_public(context, ad_payload) for ad_payload in ad_downloader_batch)
                         )
                         updated_batches.extend(updated_batch)
 
@@ -167,9 +171,10 @@ class MetaAdDownloader:
 
         return updated_batches
 
-    async def __download_ad_elements(self, context, ad_payload):
+    async def __download_ad_elements_from_private(self, context, ad_payload):
         """ [Hidden method]
         Use scraping to extract all ad elements from the ad preview url.
+        The url used is private (needs our access token).
 
         Args:
             context: A playwright browser's context
@@ -372,6 +377,168 @@ class MetaAdDownloader:
                 # Check that scraping did not fail
                 if ad_elements.get("type") == "status" and not interceptor.is_empty():
                     raise ValueError(f"Failed to scrap visuals from Meta Ad Library preview: '{preview}'")
+
+            except PlaywrightTimeoutError:
+                print(f"[ERROR] Timeout while loading page '{preview}'")
+            except PlaywrightError as e:
+                print(f"[ERROR] Scrapping page '{current_url}' failed with error: {e}")
+            except Exception as e:
+                print(f"[ERROR] Scrapping page '{current_url}' failed with error: {e}")
+            finally:
+                await page.close()
+
+        # Update payload
+        ad_payload.update({"ad_elements": ad_elements})
+
+        return ad_payload
+
+    async def __download_ad_elements_from_public(self, context, ad_payload):
+        """ [Hidden method]
+        Use scraping to extract all ad elements from the ad preview url.
+        The ad preview url is a public link.
+
+        Args:
+            context: A playwright browser's context
+            ad_payload: The ad payload (response from Ad Library API).
+
+        Returns:
+            A dict with the downloaded ad elements.
+        """
+
+        # Prepare payload to return
+        ad_elements = {
+            "body": None,
+            "type": None,
+            "carousel": [],
+            "spotted": self.__spotted
+        }
+
+        # Check that delivery_start_date is between __download_start_date et __download_end_date
+        delivery_start_date = datetime.strptime(ad_payload.get(self.DELIVERY_START_DATE_FIELD), "%Y-%m-%d")
+        download_needed = (self.__download_start_date <= delivery_start_date <= self.__download_end_date)
+
+        # Go to page and try ad elements extraction (only if needed and not already spotted)
+        if download_needed and not self.__spotted:
+            # Extract preview url from ad payload
+            preview = current_url = f"{self.PUBLIC_PREVIEW_URL}?id={ad_payload.get('id')}"
+
+            # Initiate new playwright page
+            page = await context.new_page()
+
+            try:
+                # Open Ad Library card and wait until all requests are finished / Increase nav timeout to 5 minutes.
+                await page.goto(preview, timeout=300000)
+                await page.wait_for_load_state("networkidle")
+
+                # Check if Meta redirected us to a login page
+                current_url = page.url
+                if "login" in current_url:
+                    self.__spotted = True
+                    ad_elements["spotted"] = self.__spotted
+                    raise Exception(f"Meta detected a non-human behavior and redirected us to '{current_url}'.")
+
+                # Focus on the interesting part of the page
+                source_locator = page.get_by_role("dialog").locator("//div[2]/div[1]/div[2]//div[3]")
+
+                # Get Body
+                bodies = await source_locator.locator("//div[2]/div").all()
+                if bodies:
+                    ad_elements["body"] = await bodies[0].inner_text()
+
+                # Deal with Carousels (several creatives in the ad)
+                carousel_locator = source_locator.locator("//div[3]//div[2]")
+                carousel_elements = await carousel_locator.locator("//a").count()
+                if carousel_elements > 1:
+                    ad_elements["type"] = "carousel"
+                    for k in range(1, carousel_elements):
+                        # Prepare dict
+                        creative = {
+                            "title": None,
+                            "image": None,
+                            "video": None,
+                            "landing_page": None,
+                            "cta": None,
+                            "caption": None,
+                            "description": None
+                        }
+                        element_locator = carousel_locator.locator(f"//div[{k}]")
+                        # Image
+                        images = await element_locator.locator("//img").all()
+                        if images:
+                            links_locator = element_locator.locator("//a/div[2]")
+                            creative["image"] = await images[0].get_attribute("src")
+                        # Blocked video: call self.__download_ad_elements_from_private
+                        else:
+                            return await self.__download_ad_elements_from_private(context, ad_payload)
+                        # Landing page
+                        landing_pages = await element_locator.locator("//a").all()
+                        if landing_pages:
+                            meta_url = await landing_pages[0].get_attribute("href")
+                            creative["landing_page"] = self.__extract_lp_from_meta_url(meta_url)
+                        # Call to action
+                        ctas = await links_locator.locator("""//div[2]//div[@role="button"]/span/div/div/div""").all()
+                        if ctas:
+                            creative["cta"] = await ctas[0].inner_text()
+                        # Caption
+                        captions = await links_locator.locator("//div[1]/div[1]/div/div").all()
+                        if captions:
+                            creative["caption"] = await captions[0].inner_text()
+                        # Title
+                        titles = await links_locator.locator("//div[1]/div[2]/div/div").all()
+                        if titles:
+                            creative["title"] = await titles[0].inner_text()
+                        # Description
+                        descriptions = await links_locator.locator("//div[1]/div[3]/div/div").all()
+                        if descriptions:
+                            creative["description"] = await descriptions[0].inner_text()
+                        # Add to list
+                        ad_elements["carousel"].append(creative)
+
+                # Deal with ads displaying only one creative
+                else:
+                    # Prepare dict
+                    creative = {
+                        "title": None,
+                        "image": None,
+                        "video": None,
+                        "landing_page": None,
+                        "cta": None,
+                        "caption": None,
+                        "description": None
+                    }
+                    element_locator = source_locator.locator("//div[2]")
+                    # Image
+                    images = await element_locator.locator("//img").all()
+                    if images:
+                        ad_elements["type"] = "image"
+                        links_locator = element_locator.locator("//a/div[2]")
+                        creative["image"] = await images[0].get_attribute("src")
+                    # Blocked videos: call self.__download_ad_elements_from_private
+                    else:
+                        return await self.__download_ad_elements_from_private(context, ad_payload)
+                    # Landing page
+                    landing_pages = await element_locator.locator("//a").all()
+                    if landing_pages:
+                        meta_url = await landing_pages[0].get_attribute("href")
+                        creative["landing_page"] = self.__extract_lp_from_meta_url(meta_url)
+                    # Call to action
+                    ctas = await links_locator.locator("""//div[2]//div[@role="button"]/span/div/div/div""").all()
+                    if ctas:
+                        creative["cta"] = await ctas[0].inner_text()
+                    # Caption
+                    captions = await links_locator.locator("//div[1]/div[1]/div/div").all()
+                    if captions:
+                        creative["caption"] = await captions[0].inner_text()
+                    # Title
+                    titles = await links_locator.locator("//div[1]/div[2]/div/div").all()
+                    if titles:
+                        creative["title"] = await titles[0].inner_text()
+                    # Description
+                    descriptions = await links_locator.locator("//div[1]/div[3]/div/div").all()
+                    if descriptions:
+                        creative["description"] = await descriptions[0].inner_text()
+                    # Add to list
+                    ad_elements["carousel"].append(creative)
 
             except PlaywrightTimeoutError:
                 print(f"[ERROR] Timeout while loading page '{preview}'")
