@@ -36,6 +36,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ---
 
+## [1.0.15] 2025-03-10
+### Added
+- Try downloading ad elements from a public Meta link first ("https://www.facebook.com/ads/library/?id=***")
+- Use the Meta render_ad preview (private access using access_token) only if it can't be done using public url
+
+---
+
 ## [1.0.14] 2025-03-07
 ### Added
 - Detect when Meta is blocking Playwright and store the info in ad_elements payload
