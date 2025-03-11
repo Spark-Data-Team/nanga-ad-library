@@ -36,6 +36,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ---
 
+## [1.0.17] 2025-03-11
+### Added
+- Improvement to 1.0.15 modifications: clean open Playwright pages.
+
+---
+
 ## [1.0.16] 2025-03-11
 ### Added
 - Add the opportunity to provide a proxy to run playwright with
