@@ -78,7 +78,7 @@ class MetaAdDownloader:
     # Store the maximum number of pages that can be open simultaneously in a browser's context
     MAX_BATCH_SIZE = 5
 
-    def __init__(self, start_date=None, end_date=None, verbose=False):
+    def __init__(self, start_date=None, end_date=None, verbose=False, proxy=None):
         """
 
         Args:
@@ -108,6 +108,17 @@ class MetaAdDownloader:
             if start_date and self.__verbose:
                 warnings.warn("Provided end date should match the following format '%Y-%m-%d'.")
 
+        # Store the proxy url to use for playwright
+        proxy = proxy or {}
+        if all([x in proxy.keys() for x in ["server", "username", "password"]]):
+            self.__proxy = {
+                "server": proxy.get("server"),
+                "username": proxy.get("username"),
+                "password": proxy.get("password")
+            }
+        else:
+            self.__proxy = None
+
         # Whether Meta has spotted our webdriver and blocked it.
         self.__spotted = False
 
@@ -124,7 +135,8 @@ class MetaAdDownloader:
         ad_downloader = cls(
             start_date=kwargs.get("download_start_date"),
             end_date=kwargs.get("download_end_date"),
-            verbose=kwargs.get("verbose")
+            verbose=kwargs.get("verbose"),
+            proxy=kwargs.get("proxy")
         )
 
         return ad_downloader
@@ -143,7 +155,10 @@ class MetaAdDownloader:
         # Initiate playwright context for this batch
         async with async_playwright() as p:
             # Initiate playwright browser and use it for the whole batch
-            browser = await p.chromium.launch(headless=True)
+            if self.__proxy:
+                browser = await p.chromium.launch(headless=True, proxy=self.__proxy)
+            else:
+                browser = await p.chromium.launch(headless=True)
 
             try:
                 # Download ad_elements using smaller batches
