@@ -36,6 +36,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ---
 
+## [1.0.16] 2025-03-11
+### Added
+- Add the opportunity to provide a proxy to run playwright with
+
+---
+
 ## [1.0.15] 2025-03-10
 ### Added
 - Try downloading ad elements from a public Meta link first ("https://www.facebook.com/ads/library/?id=***")
