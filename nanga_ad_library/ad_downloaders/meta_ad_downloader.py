@@ -186,14 +186,15 @@ class MetaAdDownloader:
 
         return updated_batches
 
-    async def __download_ad_elements_from_private(self, context, ad_payload):
+    async def __download_ad_elements_from_private(self, context, ad_payload, previous_page=None):
         """ [Hidden method]
         Use scraping to extract all ad elements from the ad preview url.
         The url used is private (needs our access token).
 
         Args:
             context: A playwright browser's context
-            ad_payload: The ad payload (response from Ad Library API).
+            ad_payload: The ad payload (response from Ad Library API)
+            previous_page: Playwright page in use when triggering this function.
 
         Returns:
             A dict with the downloaded ad elements.
@@ -402,6 +403,10 @@ class MetaAdDownloader:
             finally:
                 await page.close()
 
+        # Close previous page
+        if previous_page and not previous_page.is_closed():
+            await previous_page.close()
+
         # Update payload
         ad_payload.update({"ad_elements": ad_elements})
 
@@ -437,10 +442,16 @@ class MetaAdDownloader:
             # Extract preview url from ad payload
             preview = current_url = f"{self.PUBLIC_PREVIEW_URL}?id={ad_payload.get('id')}"
 
+            # Initiate request interceptor
+            interceptor = MetaRequestInterceptor(self.__verbose)
+
             # Initiate new playwright page
             page = await context.new_page()
 
             try:
+                # Activate page requests interception
+                await page.route("**/*", interceptor.intercept)
+
                 # Open Ad Library card and wait until all requests are finished / Increase nav timeout to 5 minutes.
                 await page.goto(preview, timeout=300000)
                 await page.wait_for_load_state("networkidle")
@@ -484,7 +495,7 @@ class MetaAdDownloader:
                             creative["image"] = await images[0].get_attribute("src")
                         # Blocked video: call self.__download_ad_elements_from_private
                         else:
-                            return await self.__download_ad_elements_from_private(context, ad_payload)
+                            return await self.__download_ad_elements_from_private(context, ad_payload, page)
                         # Landing page
                         landing_pages = await element_locator.locator("//a").all()
                         if landing_pages:
@@ -530,7 +541,7 @@ class MetaAdDownloader:
                         creative["image"] = await images[0].get_attribute("src")
                     # Blocked videos: call self.__download_ad_elements_from_private
                     else:
-                        return await self.__download_ad_elements_from_private(context, ad_payload)
+                        return await self.__download_ad_elements_from_private(context, ad_payload, page)
                     # Landing page
                     landing_pages = await element_locator.locator("//a").all()
                     if landing_pages:
@@ -555,8 +566,8 @@ class MetaAdDownloader:
                     # Add to list
                     ad_elements["carousel"].append(creative)
 
-            except PlaywrightTimeoutError:
-                print(f"[ERROR] Timeout while loading page '{preview}'")
+            except PlaywrightTimeoutError as e:
+                print(f"[ERROR] Timeout while loading page '{preview}': {e}")
             except PlaywrightError as e:
                 print(f"[ERROR] Scrapping page '{current_url}' failed with error: {e}")
             except Exception as e:
