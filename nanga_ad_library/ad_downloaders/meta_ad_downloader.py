@@ -172,14 +172,15 @@ class MetaAdDownloader:
                     context = await browser.new_context(user_agent=user_agent)
 
                     try:
-                        # Download ad elements (parallel calls)
-                        updated_batch = await asyncio.gather(
-                            *(self.__download_ad_elements_from_public(context, ad_payload) for ad_payload in ad_downloader_batch)
-                        )
-                        updated_batches.extend(updated_batch)
+                        for ad_payload in ad_downloader_batch:
+                            # Download ad elements 1 by 1
+                            updated_batch = await self.__download_ad_elements_from_public(context, ad_payload)
+                            updated_batches.append(updated_batch)
 
                     finally:
+                        # Close driver context and wait 1 second before next batch
                         await context.close()
+                        time.sleep(1)
 
             finally:
                 await browser.close()
