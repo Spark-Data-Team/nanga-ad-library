@@ -33,6 +33,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 [//]: # (### Security)
 
 [//]: # (- Description of any security issues that were addressed.)
+---
+
+## [1.0.18] 2025-03-18
+### Added
+- Avoid getting flagged by Ad Libraries when downloading ads by slowing the extraction process
 
 ---
 
