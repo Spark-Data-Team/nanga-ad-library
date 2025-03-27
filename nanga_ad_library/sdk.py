@@ -1,6 +1,4 @@
-import json
 import curlify
-import asyncio
 
 from nanga_ad_library.utils import (
     PlatformResponse,
@@ -250,7 +248,7 @@ class ResultCursor:
         if "data" in response:
             new_batch = [ObjectParser(**row) for row in response["data"]]
             if self.__ad_downloader:
-                new_batch = asyncio.run(self.__ad_downloader.download_from_new_batch(new_batch))
+                new_batch = self.__ad_downloader.download_from_new_batch(new_batch)
             self.__queue += new_batch
         if (
                 'paging' in response and
