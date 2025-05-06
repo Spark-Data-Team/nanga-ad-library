@@ -7,4 +7,4 @@ from .sdk import NangaAdLibrary
 __all__ = ["NangaAdLibrary"]
 
 # Store package version
-__version__ = "1.0.18"
+__version__ = "1.2.0"
