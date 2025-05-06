@@ -35,12 +35,6 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 [//]: # (- Description of any security issues that were addressed.)
 ---
 
-## [1.1.0] 2025-03-27
-### Added
-- Try using Botasaurus browser instead of Playwright for ad downloading. (Cf [Repo Botasaurus](https://github.com/omkarcloud/botasaurus/tree/70a67abcead7b39cba32e947240d30aaafa704b2))
-
----
-
 ## [1.0.18] 2025-03-18
 ### Added
 - Avoid getting flagged by Ad Libraries when downloading ads by slowing the extraction process
