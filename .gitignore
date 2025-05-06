@@ -61,6 +61,3 @@ Desktop.ini
 # Environment variable files
 .env
 .env.*
-
-# Deprecated files
-**/__dep__*.py
