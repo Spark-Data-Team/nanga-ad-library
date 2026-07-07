@@ -1126,8 +1126,11 @@ class MetaField(Enum):
         "mandatory": True,
         "warning": None
     }
-    AD_CREATIVE_LINK_BODIES = {
-        "name": "ad_creative_link_bodies",
+    AD_CREATIVE_BODIES = {
+        # Meta's Ad Library API field is "ad_creative_bodies" (no "link"); the
+        # previous "ad_creative_link_bodies" was not a valid Graph API field, so
+        # review_fields() silently dropped it and ad bodies were never returned.
+        "name": "ad_creative_bodies",
         "mandatory": False,
         "warning": None
     }
