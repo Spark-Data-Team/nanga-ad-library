@@ -16,11 +16,13 @@ one place !
 ## Table of Contents
 
 1. [Introduction](#introduction)
-2. [Roadmap](#roadmap)
-3. [Usage](#usage)
-4. [Contributing](#contributing)
-5. [License](#license)
-6. [Acknowledgements](#acknowledgements)
+2. [Supported platforms](#supported-platforms)
+3. [Installation](#installation)
+4. [Usage](#usage)
+5. [Development](#development)
+6. [Contributing](#contributing)
+7. [License](#license)
+8. [Acknowledgements](#acknowledgements)
 
 ## Introduction
 
@@ -44,49 +46,40 @@ including fines of up to 6% of their global revenue.
 The DSA regulation forced the main social advertising platforms to provide public access to their ad library and the 
 Nanga Ad Library is gathering them all for you.
 
-## Roadmap
+## Supported platforms
 
-New advertising platforms will soon be available in the Nanga Ad Library:
-- [X] __January 2025__: [Facebook Ad Library](https://www.facebook.com/ads/library)
-- [ ] __Q1 2025__: [Tiktok Ad Library](https://library.tiktok.com/ads)
-- [ ] __Q1 2025__: [Google Ad Library](https://adstransparency.google.com)
-- [ ] __Q1 2025__: [Microsoft Ad Library](https://adlibrary.ads.microsoft.com)
-- [ ] __Q2 2025__: [Twitter Ad Library](https://ads.twitter.com/ads-repository)
-- [ ] __Q2 2025__: [Apple Search Ad Library](https://adrepository.apple.com)
-- [ ] __Q2 2025__: [LinkedIn Ad Library](https://www.linkedin.com/ad-library/home)
+| Platform | Status |
+|---|---|
+| [Meta Ad Library](https://www.facebook.com/ads/library) (Facebook, Instagram) | Available |
+| [TikTok Ad Library](https://library.tiktok.com/ads) | Planned |
+| [Google Ads Transparency Center](https://adstransparency.google.com) | Planned |
+| [Microsoft Ad Library](https://adlibrary.ads.microsoft.com) | Planned |
+| [X Ads Repository](https://ads.twitter.com/ads-repository) | Planned |
+| [Apple Ads Repository](https://adrepository.apple.com) | Planned |
+| [LinkedIn Ad Library](https://www.linkedin.com/ad-library/home) | Planned |
+
+Only `platform="meta"` is accepted today; any other value raises a `ValueError`.
 
 ## Installation
 
-You can install this package directly from PyPI using `pip`:
+Install the package from PyPI (Python 3.9 to 3.13):
 ```bash
 pip install nanga-ad-library --upgrade
-playwright install --with-deps
 ```
 
-These commands will automatically download and install all required dependencies.
+To download ad elements (title, body, image or video, call to action), also install the
+[Playwright](https://playwright.dev/python/) browsers:
+```bash
+playwright install --with-deps
+```
 
 ## Usage
 
-### Prepare Ad Library for each platform
+### Prepare Ad Library access for each platform
 
-How to set up your Ad Library app ?
-- [Meta](https://www.facebook.com/ads/library/api/)
+- Meta: create a developer app and get an access token, see the [Meta Ad Library API](https://www.facebook.com/ads/library/api/).
 
-### Use the package locally
-
-#### Installation
-
-You can install this package and all required dependencies directly from PyPI using `pip`:
-```bash
-pip install nanga-ad-library --upgrade
-```
-
-To be able to download ads elements, you'll have to download [playwright](https://playwright.dev/python/) browsers:
-```bash
-playwright install --with-deps
-```
-
-#### Extract data from Ad Library
+### Extract data from Ad Library
 
 Try to extract some results from the Nanga Ad Library API:
 ```python
@@ -139,14 +132,34 @@ library = NangaAdLibrary.init(platform=platform, **init_hash)
 # Extract the first results from the Ad Library API
 results = library.get_results()
 ```
-__Note:__ please replace the {access_token} tag with valid tokens:
-- Meta Ad Library: replace'{meta_access_token}' with your [Facebook Developer access token](https://developers.facebook.com/tools/accesstoken/)
+__Note:__ replace the `{meta_access_token}` placeholder with your [Facebook Developer access token](https://developers.facebook.com/tools/accesstoken/).
 
-### Deploy the package on the cloud
--- More to come
+### Optional arguments
 
-### Use the package in a Jupyter Notebook
--- More to come
+All arguments are passed as keyword arguments to `NangaAdLibrary.init`:
+
+| Argument | Used for |
+|---|---|
+| `version` | Graph API version to query (defaults to the latest version supported by the package) |
+| `app_secret`, `cert_path`, `proxies`, `headers`, `timeout`, `max_retries`, `backoff_factor` | HTTP session to the Meta Graph API |
+| `download_ads`, `download_start_date`, `download_end_date` | Download of ad elements with Playwright |
+| `proxy` | Proxy used by the Playwright browser when downloading ad elements |
+| `verbose` | Print progress logs |
+
+`library.get_results()` returns a cursor: iterate over it to get each ad, the next pages are fetched automatically.
+
+## Development
+
+```bash
+pip install -r requirements.txt pytest
+playwright install --with-deps
+pytest ./tests/
+```
+
+- Tests run on every pull request to `main` (Python 3.9 to 3.13), see `.github/workflows/test_new_pull_request.yml`.
+- Every push to `main` builds the package and publishes it to PyPI (`.github/workflows/publish_new_version.yml`).
+  Bump `PACKAGE_VERSION` in `setup.py` and `__version__` in `nanga_ad_library/__init__.py`, and add an entry to
+  [CHANGELOG.md](CHANGELOG.md) before merging, otherwise the upload is rejected by PyPI.
 
 ## Contributing
 
